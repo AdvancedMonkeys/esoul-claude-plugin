@@ -26,8 +26,7 @@ connection reaches every project and workspace on your account.
 | `math-explainer-video` | A narrated manim explainer, rendered in a sandbox and assembled into one mp4 |
 | `build-esoul-website` | A site, store or homepage built with the site app and published to your handle |
 | `forge-app-builder` | Build a new ExternalSoul app in your Forge, with a live workbench |
-| `cloud-browser` · `browser-use` | Drive your cloud browser — logged-in sites, forms, downloads — and know whether it worked |
-| `openai-invoices` · `porkbun` | Two worked examples of the browser skills: pull invoices into a ledger; manage domains and DNS |
+| `browser-use` | Drive your cloud browser — logged-in sites, forms, web editors, batch downloads — and know whether it actually worked |
 
 ## Requirements
 
