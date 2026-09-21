@@ -48,6 +48,6 @@ want rather than assuming it is missing.
 
 - [ExternalSoul](https://externalsoul.com)
 - [SDK on PyPI](https://pypi.org/project/esoul/)
-- [SDK reference](https://externalsoul.com/sdk-docs/llm-reference.md)
+- [SDK on npm](https://www.npmjs.com/package/esoul-sdk)
 
 MIT licensed.
