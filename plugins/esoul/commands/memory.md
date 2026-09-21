@@ -1,19 +1,32 @@
 ---
-description: Open this folder's ExternalSoul memory and recall what was learned here before.
+description: Ground yourself in this project's ExternalSoul memory, and write back what is worth keeping.
 ---
 
-Ground yourself in this project's durable memory before doing anything else.
+Use the ExternalSoul workspace as durable memory for this project, so what you
+learn here survives the session.
 
-1. Call `memory_open` to create or re-attach the memory space for the current
-   working directory. The folder→space map persists, so reopening a folder
-   brings its memories back.
-2. Call `memory_recall` with a query describing what we are about to work on.
-3. Report back briefly: what you already knew about this folder, and what is
-   missing. Do not restate everything — name the facts that bear on the work.
+## Recall first
 
-If the user gave an argument, use it as the recall query: $ARGUMENTS
+1. `search_workspace` for the project you are in — its name, the repo, the
+   thing you are about to work on. Search spans every workspace you own.
+2. For each promising hit, `read_app_entry` with the returned `app_id` and
+   `entry_key`. Read only the entries that matter; do not load whole apps.
+3. Report briefly: what you already knew about this project, and what is
+   missing. Name the facts that bear on the work — do not restate everything.
 
-Throughout the session, save durable facts, decisions and preferences with
-`memory_remember` (grouping related ones under a `topic`), then call
-`memory_graph` so they link up. Save what would be expensive to rediscover —
-not what the repository already records.
+If the user gave an argument, use it as the search query: $ARGUMENTS
+
+## Write back
+
+When you learn something worth keeping — a decision and its reasoning, a
+constraint, a preference, a hard-won gotcha — put it in a notes app:
+
+- find an existing notes app with `list_workspaces` (look for a
+  `block_note_editor`), or make one with
+  `create_app({application_type: "block_note_editor", name: "Memory"})`;
+- `get_app_tools` on it, then `call_app_tool` with `create_page_*` or
+  `append_to_page_*` to add what you learned.
+
+Prefer appending to a page that already covers the topic over creating a new
+one. Save what would be expensive to rediscover — not what the repository
+already records.
