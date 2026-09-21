@@ -35,9 +35,10 @@ local server in the [`esoul` Python SDK](https://pypi.org/project/esoul/):
 
 ## Finding capabilities
 
-A core set of tools loads up front; the rest stay one call away via
-`find_tools` → `tool_help` → `run_tool`, so nothing is out of reach without
-paying for every schema on every turn.
+The connection exposes a handful of general tools rather than one per feature.
+Every app's own tools are reached through `get_app_tools` → `call_app_tool`, so
+the tool list stays small while nothing is out of reach — just ask for what you
+want rather than assuming it is missing.
 
 ## Links
 

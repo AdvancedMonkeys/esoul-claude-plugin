@@ -37,7 +37,15 @@ set up.
 
 ## Finding capabilities
 
-The server loads a core set of tools and keeps the rest one call away. If a
-capability seems missing — email, calendar, contacts, campaigns, sites,
-drawings, agents — call `find_tools` before telling the user it cannot be done,
-then `tool_help` for the arguments and `run_tool` to invoke it.
+The connection exposes a small set of general tools, not one tool per feature.
+Anything an app can do is reached through its own app tools, so if a capability
+seems missing — email, calendar, contacts, campaigns, sites, drawings, agents —
+do not tell the user it cannot be done. Instead:
+
+1. `list_workspaces` to see the apps that exist (or `search_workspace` to find
+   one by content);
+2. `get_app_tools` on the app, with `names_only: true` first if it is large;
+3. `call_app_tool` to invoke the one you need.
+
+If no suitable app exists, `create_app` makes one, and `create_workspace` makes
+somewhere to put it.
