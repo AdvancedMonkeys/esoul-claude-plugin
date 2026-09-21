@@ -20,9 +20,14 @@ connection reaches every project and workspace on your account.
 
 | Component | What it does |
 |---|---|
-| `esoul` MCP server | Drives the workspace: read state, dispatch typed events, run agents, search |
-| `/esoul:memory` | Opens this folder's memory space and recalls what was learned here before |
-| `setup` skill | Guides Claude through connecting and repairing the connection |
+| `esoul` connection | Your own account over OAuth — list, read, search, create apps and workspaces, and drive any app through its own tools |
+| `/esoul:memory` | Recall what you already know about this project from your workspace, and write back what is worth keeping |
+| `setup` | Connect or repair the connection (a sign-in — never a token) |
+| `math-explainer-video` | A narrated manim explainer, rendered in a sandbox and assembled into one mp4 |
+| `build-esoul-website` | A site, store or homepage built with the site app and published to your handle |
+| `forge-app-builder` | Build a new ExternalSoul app in your Forge, with a live workbench |
+| `cloud-browser` · `browser-use` | Drive your cloud browser — logged-in sites, forms, downloads — and know whether it worked |
+| `openai-invoices` · `porkbun` | Two worked examples of the browser skills: pull invoices into a ledger; manage domains and DNS |
 
 ## Requirements
 

@@ -1,8 +1,8 @@
 {
   "name": "esoul",
   "displayName": "ExternalSoul",
-  "version": "0.1.0",
-  "description": "Sign in to ExternalSoul and give Claude your own event-sourced workspace: spreadsheets, notes, email, calendar, contacts, drawings and multi-agent networks, with every change recorded as a replayable event.",
+  "version": "1.0.0",
+  "description": "Sign in to ExternalSoul and give Claude your own event-sourced workspace \u2014 spreadsheets, notes, email, calendar, contacts, drawings, a cloud browser and multi-agent networks \u2014 plus skills for narrated manim explainer videos, building and publishing websites, and building new apps.",
   "author": {
     "name": "ExternalSoul",
     "email": "hey@vyomkeshj.com",
@@ -12,12 +12,16 @@
   "repository": "https://github.com/AdvancedMonkeys/esoul-claude-plugin",
   "license": "MIT",
   "keywords": [
-    "memory",
-    "workspace",
     "agents",
     "automation",
+    "browser-automation",
     "event-sourcing",
-    "externalsoul"
+    "externalsoul",
+    "manim",
+    "memory",
+    "video",
+    "website",
+    "workspace"
   ],
   "mcpServers": "./.mcp.json"
 }
