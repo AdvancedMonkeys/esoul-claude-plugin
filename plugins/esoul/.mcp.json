@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "esoul": {
+      "type": "http",
+      "url": "https://externalsoul.com/mcp/me"
+    }
+  }
+}

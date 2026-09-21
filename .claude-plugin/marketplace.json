@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "externalsoul",
+  "description": "ExternalSoul — an event-sourced workspace of apps and agents that Claude can drive, and use as persistent memory.",
+  "owner": {
+    "name": "ExternalSoul",
+    "email": "hey@vyomkeshj.com",
+    "url": "https://externalsoul.com"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "esoul",
+      "source": "./plugins/esoul",
+      "displayName": "ExternalSoul",
+      "category": "productivity",
+      "tags": ["memory", "workspace", "agents", "automation", "event-sourcing"]
+    }
+  ]
+}
