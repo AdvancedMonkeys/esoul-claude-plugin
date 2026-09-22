@@ -70,7 +70,10 @@ imported. Omit `dashboard` and the monitor infers a layout from the metric names
 `run.set_dashboard(...)` changes it later; the same spec is what `set_dashboard_<base>` takes.
 
 **Credentials** resolve in order: `token=` kwarg → `ESOUL_TOKEN` → `/var/run/esoul/token`
-(sandboxes) → `~/.config/esoul/credentials` (INI: `[default]\ntoken = esoul_pat_…`, mode 0600).
+(sandboxes) → `~/.config/esoul/credentials` (INI, mode 0600; `[default]`, or the section named
+by `ESOUL_PROFILE`). On a paired computer the agent writes that file itself: `[default]` plus
+one `[ws:<workspaceId>]` per granted workspace with its `name`, and `track.init(workspace=
+"<name>")` picks the matching profile offline — so two workspaces on one machine never cross.
 None → `MissingCredentialsError`; a loop must catch that and run TensorBoard-only, never die.
 
 ## 3. Mirroring TensorBoard — the pattern a repo should ship
