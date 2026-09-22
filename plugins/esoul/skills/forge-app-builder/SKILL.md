@@ -32,6 +32,7 @@ The rest is the contract, read as the app needs it:
 | `my-computer.md` | using the person's paired computer from an app — in the Forge and after install |
 | `server-and-tasks.md` | ops, routes (SSE, a token door for machines), webhooks, Inngest tasks and the replay model, realtime |
 | `data-people-files.md` | your own tables and rules, roles and access levels, connections, files and Drive, public viewers |
+| `telling-people-later.md` | notifying a person AFTER the request: a status change, a cadence, a first visit — the recipient table, the task, the email app on the workspace |
 | `design-rules.md` | what "native" and "responsive" mean here; the pre-ship checklist |
 | `test-and-ship.md` | proving every arm with tools, the problem journal, removing test tools, shipping and installing |
 
@@ -138,6 +139,14 @@ walk away; when they are present the workbench is the honest choice.
 - **Nothing opens by default**: every op, route and task is `write` unless declared; `read`
   means workspace members, `public` means share-link holders; `requires:"account"` is the
   sign-in wall.
+- **Different people see different rows** — never one screen for everyone. `roles` are your
+  vocabulary, `db.rules` decide per row (`creator`, a role, a scoped role `{role, where}`),
+  `sealed` hides a field from everyone but its owner, and a `customer` sees only their own
+  rows while `staff` see all and never an address. Proved as five people (`data-people-files.md` §2).
+- **Telling someone later is a task plus your own table.** No send primitive exists and a task
+  cannot look a person up: capture the address while there IS a viewer, put what the task will
+  need on the row it will act on, send through the workspace's email app under a `workspaceTools`
+  grant, and record the send as an event (`telling-people-later.md`).
 - **Missing ≠ empty**: `getStateDescription` uses `incompleteStateNotice`.
 - **Native and responsive**: root fills the frame, warm-sepia light / translucent dark,
   opaque popovers in dark, tap-to-act, a 390 px phone shot with no horizontal scroll.
