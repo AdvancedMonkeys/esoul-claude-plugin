@@ -83,9 +83,14 @@ shows it — an event without `triggerMeta` is undiscoverable). Declare it on th
 something happened (`order_placed`, `run_finished`), not on bursts. Your own tasks may also wake
 on events (`ctx.step.waitForEvent`, `server-and-tasks.md`).
 
-## 6. The person's computer
+## 6. The apps with their own skill
 
-The most-used other app is `my_computer`. It has its own page: `my-computer.md`.
+Before calling a built-in app, read its skill: it names the real tool base names, the state
+shape, and what goes wrong. `my-computer.md` (this skillset) for `my_computer`; the plugin's
+`training-monitor` (the workspace's TensorBoard — a training app logs to it from the machine
+with `esoul.track`), `block-notes` (pages, folders, images, knowledge), `slideshow` (slides as
+TSX, judged by a critic). For any other app: `get_app_tools` on an instance and read the
+descriptions; `read_app_state` once to learn its shape.
 
 ## 7. Proving it
 
