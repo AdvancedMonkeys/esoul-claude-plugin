@@ -105,7 +105,10 @@ without it refuses to open a workbench and says so — relay that, never work ar
    Steps run against the real preview — a click that starts something starts it.
 7. `call_app_tool {pluginId, tool, args}` — runs one of the APP's own tools inside the box; the
    events land in the frame. `read_app_state {pluginId}` reads the fold. This is how an agent
-   will drive the app after install — drive it that way now.
+   will drive the app after install — drive it that way now. Ops run over the preview's
+   in-memory tables (`pluginDb`) with your real rules, and **VIEW AS** (`viewer:` on
+   `look_at_app` / `drive_app` / `preview_app`) shows each persona exactly what those rules let
+   them see — visitor-b must see nothing of visitor-a's.
 8. `test_app` (the app's own jest, seconds) after any change to schema/events/ops;
    `check_app` (registry sync, the import wall, the app's tests + the platform suites, types)
    before "ready". Read every red gate's detail. `skipped` is not a pass.
