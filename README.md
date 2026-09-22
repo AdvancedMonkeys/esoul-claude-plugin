@@ -25,7 +25,7 @@ connection reaches every project and workspace on your account.
 | `setup` | Connect or repair the connection (a sign-in — never a token) |
 | `math-explainer-video` | A narrated manim explainer, rendered in a sandbox and assembled into one mp4 |
 | `build-esoul-website` | A site, store or homepage built with the site app and published to your handle |
-| `forge-app-builder` | Build a new ExternalSoul app in your Forge, with a live workbench |
+| `forge-app-builder` | Turn an idea into a full ExternalSoul app in your Forge — events, tools that chat and voice call, server ops and streaming routes, durable tasks, your own tables and roles, realtime, files and Drive, other apps, your own computer — proven with tools in a live workbench before install |
 | `browser-use` | Drive your cloud browser — logged-in sites, forms, web editors, batch downloads — and know whether it actually worked |
 
 ## Requirements

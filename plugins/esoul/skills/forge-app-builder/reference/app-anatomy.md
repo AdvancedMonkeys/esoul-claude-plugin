@@ -1,57 +1,85 @@
-# The anatomy of an ExternalSoul app (plugin package)
+# The anatomy of an app — the code contract
 
-An app is a folder `src/plugins/<id>/` on the platform's branch. The workbench scaffolds it; you
-fill it in. Every file below is what the platform expects, in the order you should write them.
+An app is a folder `src/plugins/<id>/` on the platform's branch. The workbench scaffolds it;
+you fill it in. Everything reaches the platform **only through `esoul-sdk`** (`esoul-sdk`,
+`esoul-sdk/react`, `esoul-sdk/server`, `esoul-sdk/testing`), relative files, `server-only`, and
+npm packages the platform already has. `@/…`, `node:*`, `prisma`, `next`, `inngest`: refused by
+the import wall at check, sync and release.
 
-## `plugin.json` — the manifest
-
-```json
-{
-  "manifestVersion": 1,
-  "id": "sticky-notes",
-  "name": "Sticky notes",
-  "version": "0.1.0",
-  "description": "A wall of paper notes: pin, colour, drag, and let agents add to it.",
-  "applicationType": "plugin_sticky_notes",
-  "entry": "app",
-  "icon": "StickyNote",
-  "ops": ["read-notes"],
-  "workspaceTools": ["spreadsheet:add_row"]
-}
+```
+plugin.json        the manifest — the design, read at install
+ops.ts             what every op TAKES, declared once (zod) — imported by server.ts AND app.tsx
+app.tsx            the SCHEMA: state, events, tools, describer, tasks, channel. NEVER "use client"
+ui/<id>-ui.tsx     the React UI — "use client"; props { state }
+server.ts          "server-only": ops, routes, webhooks, file providers
+<id>.test.ts       the fold contract, the ops, the task — run by test_app
+package.json       only for an npm package the platform lacks (a visible line in the PR)
 ```
 
-- `id`: lower-case, dashes. `applicationType`: `plugin_` + the id with underscores — the platform
-  tells plugins from built-ins by that prefix. Never change either after shipping.
-- `icon`: a lucide-react component name; `open_workbench` lists the allowed ones.
-- `ops`: the server operations `server.ts` exports (below). `workspaceTools`: the grants the UI
-  needs to call OTHER apps' tools once installed — `<applicationType>:<tool base name>`. Absent =
-  no cross-app access; the user sees these at install.
-- Secrets never live in a manifest. An external service is declared as a `connections` entry
-  (oauth2 / apiKey) naming ENV VARIABLE NAMES and header NAMES, never values.
+## 1. `plugin.json`
 
-## `app.tsx` — the schema (NOT `"use client"`)
+| Field | Rule |
+|---|---|
+| `id` | lower-case, hyphens; equals the folder; **never changes** |
+| `applicationType` | `plugin_` + id with underscores; **never changes**; the schema must name it |
+| `name`, `version`, `description` | what people see (≤ 80); semver bumped every submission; one honest paragraph (≤ 500) |
+| `entry`, `icon` | `app`; a lucide-react name (the tool lists the allowed set) |
+| `ops` | `{ "<name>": { "access"?: "write"\|"read"\|"public", "requires"?: "account" } }` — every op `server.ts` exports; default `write` |
+| `routes` | same shape; `access: "token"` for a machine's door |
+| `webhooks` | `["inbound"]` → `POST /api/plugins/<id>/webhook/inbound` |
+| `kickableTasks`, `pollTasks` | tasks the browser/tools may kick; tasks run on a cadence (5-min granularity, min 5) |
+| `roles` | your vocabulary + a `default` map from the platform's kinds; typed `attributes` a grant may carry |
+| `db` | your tables: `fields`, `scope`, `owner`, `sealed`, `unique`, `indexes` (kinds `btree`/`contains`/`text`), `rules` |
+| `channel` | realtime topics with audiences (`all` / `viewer` / `role:<name>`) and `mayAddress` |
+| `workspaceTools` | grants to call OTHER apps' tools: `"<applicationType>:<tool base>"`; absent = none |
+| `uses` / `provides` | binding slots and contracts (`talking-to-other-apps.md`) |
+| `connections` | OAuth2 / apiKey declarations naming ENV VARIABLE names, never values |
+| `fileSources` | `{ workspace: "read"\|"readwrite", providers: [...], write: [...] }`; absent = no file access |
+| `platformApi` | `{ min, max }` of the platform contract |
 
-This module is evaluated in the server bundle. It exports `pluginSchema`: the state shape, the
-events that change it, the tools agents call, and the description agents read. The UI is a
-separate client module it imports.
+Secrets never live here. `ops: ["read-notes"]` (a bare array) still validates and means
+`write` for each — prefer the object form so the access is visible.
+
+## 2. `ops.ts` — declared once
 
 ```ts
-import { nanoid } from "nanoid";
 import { z } from "zod";
-import { incompleteStateNotice, EventTypes,
-  type ApplicationIdentifier, type ApplicationSchema, type ApplicationPort,
-  type EventData, type EventDefinition } from "esoul-sdk";
+import { defineOps } from "esoul-sdk";
+export const PLUGIN_ID = "sticky-notes";
+export const ops = defineOps({
+  "read-notes": z.object({}),
+  "add-note": z.object({
+    text: z.string().min(1).max(2000).describe("The note's text"),
+    color: z.enum(["butter", "rose", "mint", "sky", "lilac"]).optional().describe("Paper colour; butter when unsure"),
+  }),
+});
+export type OpIn<K extends keyof typeof ops> = z.infer<(typeof ops)[K]>;
+```
+
+`.describe()` every field — it is the model's parameter help. `handleOp` parses with this;
+`opTool` mints the tool from it; the UI sends the same fields. `z.object` STRIPS unknown
+fields, so a hand-written tool that forgets one silently drops it — the night an op accepted
+`imageUrl` and its tool did not, the shop "added Earl Grey" with no picture and every test was
+green. Derived tools cannot drift; `check_app` scans for an op not wrapped in `handleOp` or a
+tool naming an undeclared op.
+
+## 3. `app.tsx` — the schema
+
+```ts
+import { nanoid, EventTypes, incompleteStateNotice, opTool, kickPluginTask,
+  type ApplicationIdentifier, type ApplicationSchema, type ApplicationPort, type EventData, type EventDefinition } from "esoul-sdk";
+import { z } from "zod";
+import { ops, PLUGIN_ID } from "./ops";
 import { StickyNotesUi } from "./ui/sticky-notes-ui";
 
 export interface StickyNotesData extends ApplicationIdentifier {
-  notes: { id: string; text: string; color: NoteColor; x: number; y: number; pinned: boolean; createdAt: number; updatedAt: number }[];
+  notes: { id: string; text: string; color: string; x: number; y: number; createdAt: number; updatedAt: number }[];
 }
 
 export const noteAddedEvent: EventDefinition<StickyNotesData> = {
-  eventName: "plugin_sticky_notes_added",
-  type: EventTypes.Client,
-  // dataCreator MINTS ids and timestamps. Called by the UI and by tools.
-  dataCreator: (args) => ({
+  eventName: "plugin_sticky_notes_added",           // globally unique; prefix with your type
+  type: EventTypes.Client,                          // Client = UI and tools; Server = tasks/webhooks only
+  dataCreator: (args) => ({                         // MINTS ids and times. Called by the UI and by tools.
     eventName: "plugin_sticky_notes_added",
     eventData: { noteId: args.noteId ?? nanoid(), text: String(args.text ?? "").slice(0, 2000), color: args.color ?? "butter", x: args.x ?? 24, y: args.y ?? 76, at: args.at ?? Date.now() },
     timestamp: Date.now(),
@@ -60,153 +88,178 @@ export const noteAddedEvent: EventDefinition<StickyNotesData> = {
     instanceName: args.instanceName,
     chatIdSource: args.chatIdSource,
   }) as EventData<any>,
-  // processor is PURE and IDEMPOTENT: same input, same output, on every replay.
-  processor: (state, event) => {
+  processor: (state, event) => {                    // PURE, idempotent, bounded, refusing
     const d = event.eventData ?? {};
-    if (typeof d.noteId !== "string" || typeof d.text !== "string") return state;   // refuse what you cannot trust
-    if (state.notes.some((n) => n.id === d.noteId)) return state;                      // replay-safe
-    if (state.notes.length >= 300) return state;                                        // bounded
-    return { ...state, notes: [...state.notes, { id: d.noteId, text: d.text, color: d.color, x: d.x, y: d.y, pinned: false, createdAt: d.at, updatedAt: d.at }] };
+    if (typeof d.noteId !== "string" || typeof d.text !== "string") return state;
+    if (state.notes.some((n) => n.id === d.noteId)) return state;          // replay-safe
+    if (state.notes.length >= 300) return state;                            // bounded
+    return { ...state, notes: [...state.notes, { id: d.noteId, text: d.text, color: d.color, x: d.x, y: d.y, createdAt: d.at, updatedAt: d.at }] };
   },
+  // An event other apps and agents may WAKE on (agent-builder Trigger node, chat waits):
+  triggerMeta: { displayName: "Note added", description: "A sticky note was pinned", sampleVariables: ["noteId", "text"] },
 };
+
+export const noteTextSetEvent: EventDefinition<StickyNotesData> = {
+  /* …dataCreator / processor as above; an unknown id is ignored, never invented… */
+  collapseConfig: {                                  // a typing burst is ONE timeline row
+    collapseKeyFn: (eventData, ctx) => `${ctx.applicationId}:${(eventData as { noteId?: string }).noteId}:text`,
+    collapseWindowMs: 2500,
+  },
+} as EventDefinition<StickyNotesData>;
 
 export const pluginSchema: ApplicationSchema<StickyNotesData> = {
   applicationType: "plugin_sticky_notes",
   description: "A wall of sticky notes on the workspace timeline.",
   reactNode: StickyNotesUi,
-  reconstructStateFromEventLog: true,       // state IS the fold of events — never a shadow copy
-  events: [noteAddedEvent /*, …*/],
+  reconstructStateFromEventLog: true,                // state IS the fold — replay, snapshots, durability
+  events: [noteAddedEvent, noteTextSetEvent],
   getPorts: (): ApplicationPort[] => [],
-  stateCreator: (identifier) => ({ ...identifier, notes: [] }),
+  stateCreator: (identifier) => ({ ...identifier, notes: [] }),   // ALWAYS spread the identifier
   toolkitCreator: (identifier, forChatId, eventCallback) => {
     const base = identifier.instanceName.replace(/[^a-zA-Z0-9]/g, "_");
     const idArgs = { ...identifier, applicationId: identifier.nodeId, chatIdSource: forChatId };
+    const pin = async (a: { text: string; color?: string }) => {           // an event tool: the fold
+      const noteId = nanoid();
+      await eventCallback(noteAddedEvent.dataCreator({ ...idArgs, noteId, ...a }));
+      return `Pinned note ${noteId}.`;
+    };
     return {
-      [`add_note_${base}`]: {
-        description: `Pin a new sticky note on "${identifier.instanceName}". Returns the note's id.`,
-        parameters: z.object({ text: z.string().min(1).max(2000), color: z.enum(["butter","rose","mint","sky","lilac"]).optional() }),
-        execute: async (args) => {                       // server surfaces: chat, agents, MCP
-          const noteId = nanoid();
-          await eventCallback(noteAddedEvent.dataCreator({ ...idArgs, noteId, ...args }));
-          return `Pinned note ${noteId}.`;
-        },
-        onClient: (args) => {                            // browser surfaces: voice, WebMCP — SAME event
-          const noteId = nanoid();
-          eventCallback(noteAddedEvent.dataCreator({ ...idArgs, noteId, ...args }));
-          return `Pinned note ${noteId}.`;
-        },
+      [`pin_note_${base}`]: {
+        description: `Pin a sticky note on "${identifier.instanceName}". Returns the note's id, which set_note_text takes.`,
+        parameters: z.object({ text: z.string().min(1).max(2000), color: z.enum(["butter", "rose", "mint", "sky", "lilac"]).optional() }),
+        execute: pin,
+        onClient: pin,                                                       // voice + WebMCP: the SAME work
       },
-      [`read_notes_${base}`]: {
+      [`read_notes_${base}`]: opTool(ops, "read-notes", {                    // an op tool: server truth
+        pluginId: PLUGIN_ID, nodeId: identifier.nodeId,
         description: `Read every note on "${identifier.instanceName}" with the ids the other tools take.`,
-        parameters: z.object({}),
-        readOnly: true,
-        publicSafe: true,
-        onClient: () => {},
-        execute: async () => {
-          // Server truth through the plugin's own op — never a self-fetch of /api/v1.
-          const { callPluginOp } = await import("@/lib/plugins/call-op");
-          const s = await callPluginOp<Pick<StickyNotesData, "notes">>("sticky-notes", "read-notes", identifier.nodeId);
-          return describeNotes(s);
-        },
-      },
+        readOnly: true, publicSafe: true,
+        say: (s: Pick<StickyNotesData, "notes">) => describeNotes(s),
+      }),
     };
   },
-  // What an agent reads about this app every turn. Missing is NOT empty.
-  getStateDescription: (state) => {
+  getStateDescription: (state) => {                  // what an agent reads every turn
     const notLoaded = incompleteStateNotice({ title: "Sticky notes", instanceName: state?.instanceName, shape: { lists: { notes: state?.notes } } });
-    if (notLoaded) return notLoaded;
+    if (notLoaded) return notLoaded;                 // MISSING means not loaded; [] is real
     return describeNotes(state);
   },
+  // tasks: [...]  channel: ...   → server-and-tasks.md
 };
 ```
 
-Rules the checks enforce and reviewers look for:
+The rules the checks enforce and reviewers read for:
 
-- **Events are the truth.** No component state that the timeline does not know about, except
-  what is honestly local to a device (a drag in progress, text still being typed). No writes to
-  anything but events.
-- **Ids and timestamps are minted in `dataCreator`, never in `processor`.** A processor that calls
-  `nanoid()` or `Date.now()` folds differently on every replay and breaks time-scrubbing.
-- **Processors are pure, idempotent, bounded, and refuse untrusted payloads** — return `state`
-  unchanged rather than throw.
-- **Bursts collapse.** A typing burst or a drag is ONE row on the timeline: give such an event a
-  `collapseConfig: { collapseKeyFn: (eventData, ctx) => `${ctx.applicationId}:${eventData.noteId}:text`, collapseWindowMs: 2500 }`
-  so consecutive events with the same key within the window merge, and a paragraph is not fifty
-  events. Key by the entity AND the field; never share a key across entities.
-- **Every UI action has a tool twin.** If a person can do it by hand, an agent can do it by tool,
-  through the same event. Provide both `execute` (server surfaces) and `onClient` (browser
-  surfaces) so chat, voice, agents and MCP all reach it. **Never an empty `onClient` stub**: the
-  voice runtime reports a tool that returns nothing as a success, so a stub makes the agent claim
-  work it did not do. Simplest correct form, at the end of the toolkit:
-  `for (const t of Object.values(tools)) t.onClient = t.execute;` (events dispatch in the browser
-  too, and `callPluginOp` rides the session there). The checks refuse the stub.
-- **Tool names are `<verb>_<instance base>`**; verbs are lower-case with underscores; describe
-  them for a model, name what they return, and say where ids come from.
-- **`getStateDescription` never claims a count or emptiness it could not read** — use
-  `incompleteStateNotice` for a missing collection; `[]` is real, `undefined` means not loaded.
-- A tool that needs server truth calls a plugin OP (`server.ts`); it never fetches `/api/v1/*`
-  itself (that route is token-gated and will refuse the tool). In the workbench such a tool is
-  refused by design — `read_app_state` reads the preview instead.
+- **Processors are pure, idempotent, bounded, and refuse** — return `state`, never throw (a
+  throw in a fold takes the whole workspace view down).
+- **Ids and timestamps are minted in `dataCreator`**, never in a processor (two folds of one log
+  must be deep-equal).
+- **Bursts and whole-replace events carry a collapse key** namespaced by instance AND entity AND
+  field — never by the app alone.
+- **What is local stays local** (a drag in flight, text mid-typing, which tab is open) and lands
+  as ONE event when done. Never mirror app state into a second store.
+- **`stateCreator` spreads the identifier**; tools and describers read `instanceName` from state.
+- **Every UI action has a tool twin**; every tool has a real `onClient` (`= execute`) — an empty
+  stub makes the voice runtime report success for nothing. `readOnly` lets a read-scoped token
+  call it; `publicSafe` allows a storefront.
+- **A tool never dispatches an event an op also records** — the op owns its timeline
+  (`ctx.emit`); a double record has an id the reducer cannot dedupe.
+- **`getStateDescription` never claims a count or an emptiness it could not read.**
 
-## `ui/<id>-ui.tsx` — the UI (`"use client"`)
+## 4. `ui/<id>-ui.tsx`
 
 ```tsx
 "use client";
-import React from "react";
-import { useAppCanEdit, usePluginEventDispatch, useWorkspaceTools } from "esoul-sdk/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { callPluginOp, PluginCallError } from "esoul-sdk";
+import { useAppCanEdit, usePluginEventDispatch, useViewer, useSignInWall, useWorkspaceTools, usePluginRealtime } from "esoul-sdk/react";
 import { noteAddedEvent, type StickyNotesData } from "../app";
+import { PLUGIN_ID } from "../ops";
 
 export function StickyNotesUi({ state }: { state: StickyNotesData }) {
-  const dispatch = usePluginEventDispatch();      // the ONLY way to change state
-  const canEdit = useAppCanEdit();                // readers of a share see the app, cannot mutate
-  const dark = useIsDark();                       // document.documentElement.classList.contains("dark"), observed
-  const tools = useWorkspaceTools(state);         // other apps' tools, gated by plugin.json workspaceTools
-  // …
+  const dispatch = usePluginEventDispatch();        // the ONLY way to change the fold
+  const canEdit = useAppCanEdit();                  // readers of a share see it, cannot mutate
+  const viewer = useViewer();                       // kind, role, canWrite, signedIn (a guess — never gate a read on it)
+  const wall = useSignInWall();                     // login-required → the sign-in wall
+  const tools = useWorkspaceTools(state);           // other apps, by manifest grant
+  const dark = useIsDark();                         // observe .dark on <html> at runtime
+  const op = useCallback(<T,>(name: string, args?: unknown) => callPluginOp<T>(PLUGIN_ID, name, state.nodeId, args), [state.nodeId]);
+  // dispatch(noteAddedEvent.dataCreator({ ...state, applicationId: state.nodeId, text })) is a write; disable when !canEdit
+  // wall.ask(() => op("my-orders")).then(r => r && setOrders(r))   — let the SERVER decide who is signed in
 }
 ```
 
-- Props are `{ state }`: the folded state, live. You never fetch it.
-- `dispatch(noteAddedEvent.dataCreator({ …identifier fields from state, …args }))` is a write.
-  Disable writes when `!canEdit`.
-- Theme: read the `.dark` class on `<html>` (observe it — the user toggles at runtime) and choose
-  from a per-app `LIGHT`/`DARK` palette object of the same shape. See design-rules.md.
-- Cross-app: `useWorkspaceTools({ workspaceId, nodeId })` (the state carries both) returns
-  `{ call({appType|targetNodeId, tool, args}) → {ok, text}, listApps() }`.
-  In the workbench it works through the board's tab (dev mode); installed, only the manifest's
-  grants are allowed.
+- Props are `{ state }`, the folded state, live; you never fetch it.
+- Server truth: `callPluginOp` (rides the session; in a box it reaches the preview's op route).
+  A `PluginCallError` carries a `code` (`forbidden`, `login-required`, `invalid`, `not-bound`) —
+  relay its message; `wall.raise(err)` turns `login-required` into the wall.
+- Editors holding a local copy take remote changes through `useRemoteReconcile` (SDK docs/17),
+  never a hand-rolled `useEffect` compare.
+- Theme, layout, touch, popovers, empty state: `design-rules.md`. A `/`-heavy component tree is
+  fine; keep files under 512 KB and the app under 200 files.
 
-## `server.ts` — server operations (optional)
+## 5. `server.ts`
 
 ```ts
 import "server-only";
-import { readFoldedAppState } from "@/lib/workspace-apps/read-folded-app-state";
-import type { PluginOpContext, PluginServerModule } from "@/lib/plugins/server";
+import { handleOp } from "esoul-sdk";
+import { readAppState, pluginDb, computer, callWorkspaceTool, filesForOp, mintRouteToken, sseStream,
+  type PluginOpContext, type PluginServerModule } from "esoul-sdk/server";
+import { ops, type OpIn } from "./ops";
+
+class Refusal extends Error { constructor(public code: string, message: string) { super(message); } }
+/** An op that THROWS is journalled as a bug and answers 502. An expected refusal is RETURNED. */
+const guarded = <A, R>(run: (ctx: PluginOpContext, a: A) => Promise<R>) => async (ctx: PluginOpContext, a: A) => {
+  try { return await run(ctx, a); }
+  catch (e) { if (e instanceof Refusal) return { ok: false as const, code: e.code, message: e.message }; throw e; }
+};
 
 async function readNotes(ctx: PluginOpContext) {
-  const folded = await readFoldedAppState(ctx.nodeId);
-  if (!folded) throw new Error(`no Sticky notes app ${ctx.nodeId}`);
-  const s = folded.state as Partial<StickyNotesData>;
-  if (!Array.isArray(s.notes)) throw new Error("the wall did not fold (notes missing)");  // missing ≠ empty
+  const app = await readAppState(ctx.nodeId);                  // the fold at head; null = no such app
+  if (!app) throw new Error(`no app ${ctx.nodeId}`);
+  const s = app.state as Partial<StickyNotesData>;
+  if (!Array.isArray(s.notes)) throw new Error("the wall did not fold (notes missing)");   // MISSING ≠ empty
   return { notes: s.notes };
 }
-export const pluginServer: PluginServerModule = { ops: { "read-notes": readNotes } };
+async function addNote(ctx: PluginOpContext, input: OpIn<"add-note">) {
+  if (!ctx.viewer.canWrite) throw new Refusal("read_only", "You can look, not pin — ask the owner for edit access.");
+  await ctx.emit("plugin_sticky_notes_added", { noteId: `op-${ctx.viewer.viewerIds[0]}-${Date.now()}`, ...input });  // the op owns the timeline
+  return { ok: true as const };
+}
+
+export const pluginServer: PluginServerModule = {
+  ops: { "read-notes": handleOp(ops, "read-notes", readNotes), "add-note": handleOp(ops, "add-note", guarded(addNote)) },
+  // routes: { … }, webhooks: { … }   → server-and-tasks.md
+};
 ```
 
-List every op in `plugin.json` `ops`. Ops run in the platform with the caller's access checks; a
-tool reaches one through `callPluginOp(pluginId, op, nodeId, args)`.
+`ctx` on an op: `{ nodeId, workspaceId, viewer, args, emit, notify, apps, cloudConnectionId,
+origin, … }`. Ops must be idempotent (a tool call can be retried) and answer within one request.
+An op reads its BINDINGS or its tables — folding the app to read one field is a paged rebuild
+paid by a stranger pressing "browse".
 
-## Tests — `<id>.test.ts` and `<id>-ui.test.tsx`
+## 6. Tests — `<id>.test.ts`
 
-`check_app` runs them with jest. Write the fold contract as tests, because that is what a
-reviewer trusts: starts empty; an event adds exactly what it says; replaying the same event is a
-no-op; a bad payload leaves state unchanged; caps hold; no processor mints an id or a timestamp
-(assert two folds of the same log are deep-equal); `getStateDescription` refuses a missing
-collection. A UI test renders with a fixed state and checks the visible chrome and the empty
-state. Keep them fast — they run beside the preview on the same machine.
+```ts
+import { fakeViewer, memoryDb, memoryFiles, runOp } from "esoul-sdk/testing";
+import { noteAddedEvent, pluginSchema, type StickyNotesData } from "./app";
 
-## What the checks run
+const IDENT = { workspaceId: "ws1", nodeId: "node1", applicationType: "plugin_sticky_notes", instanceName: "My wall" };
+const fresh = (): StickyNotesData => pluginSchema.stateCreator(IDENT as any, {} as any);
 
-`check_app` = registry sync (your app is generated into the plugin registry), the app's tests +
-the platform's boundary and crash-safety suites (schema must not be `"use client"`, describers
-must be crash-safe, no server-only import reaches the client graph), and a type check of the
-package. Green everywhere is what `ship_app` requires.
+it("starts empty; an event adds exactly what it says; a replay is a no-op", () => {
+  const ev = noteAddedEvent.dataCreator({ ...IDENT, noteId: "n1", text: "milk" });
+  const once = noteAddedEvent.processor(fresh(), ev);
+  expect(once.notes.map((n) => n.id)).toEqual(["n1"]);
+  expect(noteAddedEvent.processor(once, ev)).toEqual(once);
+});
+it("refuses a payload it cannot trust", () => expect(noteAddedEvent.processor(fresh(), { eventData: { noteId: 42 } } as any)).toEqual(fresh()));
+it("two folds of one log are identical (no processor mints)", () => { /* fold twice, deep-equal */ });
+it("the describer never claims an emptiness it could not read", () => {
+  expect(pluginSchema.getStateDescription({ ...IDENT } as any)).toMatch(/not loaded|incomplete/i);
+  expect(pluginSchema.getStateDescription(fresh())).toMatch(/No notes yet/);
+});
+it("visitor-b cannot read visitor-a's row", async () => { /* memoryDb(manifest) + fakeViewer + runOp — data-people-files.md */ });
+```
+
+Tests must not import `node:*` (the wall runs over tests too). Local jest is `isolatedModules`:
+types are inert — `check_app` on the box is the bar. Keep tests fast; they run beside the preview.
