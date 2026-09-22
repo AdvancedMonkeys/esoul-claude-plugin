@@ -13,7 +13,7 @@ computes, the app records, the app reasons.
 | Every command is **approval-gated** unless the OWNER set the app to **Auto** — and only a person can; an agent, a tool or a PAT setting Auto is ignored by design | a `pending_approval` is a WAIT, not a failure: show its `message` as it comes and poll; never try to auto-approve |
 | One wait ≤ 55 s; one command ≤ 900 s | anything longer runs **detached** (`nohup … > log 2>&1 & echo $!`) and is **polled** by pid |
 | **8,000 characters** of output are kept | compute ON the machine, print a small JSON; a cut answer is `truncated` — unknown, never half-parsed |
-| Commands are recorded on the workspace **timeline** | **no secret ever rides in a command** — no PAT, no API key; hand a machine a credential through a one-time `token` route (§5) |
+| Commands are recorded on the workspace **timeline** | **no secret ever rides in a command** — the workspace credential the owner granted rides in the command's ENVIRONMENT (`ESOUL_TOKEN`, §5); anything else goes through a one-time `token` route |
 | Several machines may be paired | remember the chosen `machineNodeId` in the fold or a one-row table; never "the first" |
 | From a box, `computer()` travels through the board's open tab | headless (MCP with no board tab open) you get "no board is connected to this preview"; unit-test with the machine mocked, drive live with the preview open on the board, or after install |
 | A machine that does not answer is named as such | "no app X in this workspace" / "offline since …" — never blame a server it never asked |
@@ -91,10 +91,20 @@ computer's own sentence. The probe also reports a run alive that the app never r
 - `claude_task` runs Claude Code on THEIR machine and spends THEIR Claude subscription or key —
   say so; prefer `permissionMode: "no_writes"` for reads.
 
-## 5. Handing a machine a credential — never in a command
+## 5. Credentials on the machine — the SDK grant, and the one-time door
 
-A monitor token, an API key the job needs, a push URL: the machine fetches it over HTTPS from a
-door your app opened for one read.
+**A paired computer can already hold a workspace credential.** When the owner pairs it with the
+"SDK access" box ticked, or sets **SDK: Read / Write** in the My Computer app, the agent keeps a
+credential scoped to THAT workspace (30 days, rotated, revocable in the app or under the
+workspace's Access Tokens) at `~/.config/esoul/credentials` and exports `ESOUL_TOKEN` +
+`ESOUL_BASE_URL` into every command your app runs there. So `esoul.track`, `esoul-mcp` and the
+esoul SDK work in your job with nothing passed — and it can never drive the machine's own
+command plane (the credential is refused there by construction). Your op's probe should report
+whether the file exists; if not, say "turn on SDK access in the My Computer app". Never ask for
+a PAT, never put one in a command.
+
+**A machine that is not a paired computer** (a server of the person's, a device) gets a secret
+through a door your app opens for one read:
 
 ```json
 "routes": { "credential": { "access": "token" } }
@@ -106,8 +116,8 @@ await computer(ctx, machine).run(`python3 helper.py credentials --url '${grant.u
 // the route: answer the sealed value once, then delete the row → 410 for ever after
 ```
 `grant.url` is on the origin the op was called on — a box's preview domain in the Forge, the
-platform after install — so the machine reaches the same app either way. The same door, with a
-longer life, is how a machine PUSHES results back (`server-and-tasks.md` §3).
+platform after install. The same door, with a longer life, is how a machine PUSHES results back
+(`server-and-tasks.md` §3).
 
 ## 6. Proving it
 

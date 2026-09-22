@@ -115,26 +115,33 @@ batched per step; the honest held-out numbers are logged **in the same process**
 (a later process resuming by id once attached them to the wrong run); `close()` drains. Print
 the `[tracking]` line — it is what a poll greps to prove the mirror is live.
 
-## 4. From a Forge app that trains on the user's computer
+## 4. From a Forge app that trains on the user's computer — the "Train model" button
 
 The app (built with `forge-app-builder`) orchestrates a `my_computer`; the machine logs to the
 monitor by itself. Three seams, each already built:
 
-1. **The machine needs a token and must never see it in a command** (commands are recorded on
-   the timeline). The app takes a PAT the person pastes, keeps it SEALED in a `db` table, and
-   opens a one-time `token` route; the helper on the machine fetches it once over HTTPS and
-   writes `~/.config/esoul/credentials` (0600); the route answers 410 ever after and the row is
-   deleted. (`forge-app-builder` → `my-computer.md` §5.) The person can also write the file by
-   hand — say the path and the INI shape.
-2. **Name the monitor in the app's settings** and pass it to the job (`--monitor "Technotron
-   Column Flow"`); the repo's tracker calls `track.init(monitor=…)`. Two monitors for two
-   models (columns / edges) is normal; the group is the sweep.
-3. **The app reads the monitor, it does not re-log it.** Declare grants
-   `"training_monitor:list_runs"`, `"training_monitor:analyze_run"`, `"training_monitor:read_run"`
-   and call `callWorkspaceTool({ appType: "training_monitor", tool: "analyze_run", args: { run } })`
-   from an op — or `readAppState(monitorNodeId)` and read `stats`. Show the verdict on the app's
-   own screen next to its own run record; link "open the monitor" (the monitor's nodeId in the
-   fold). Poll cadence: the helper's log poll (30 s) is enough; the monitor updates itself.
+1. **The credential is on the machine already.** When the person paired the computer with the
+   "SDK access" box ticked (or set **SDK: Write** in the My Computer app), the agent keeps a
+   workspace-scoped credential at `~/.config/esoul/credentials` and exports `ESOUL_TOKEN` into
+   every command the app runs there. Nothing to paste, nothing in a command. Check it in
+   `machine-status` (`test -s ~/.config/esoul/credentials`); if it is missing, the honest
+   answer is "turn on SDK access in the My Computer app" — never ask for a PAT. (A machine
+   that is NOT a paired computer still gets the one-time `token`-route hand-off,
+   `my-computer.md` §5.)
+2. **First click creates the monitor; every later run lands in it.** `track.init(monitor=NAME)`
+   finds-or-creates the monitor app BY NAME, so the job itself does the first-time setup: pass
+   the name from the app's settings (`--monitor "Technotron Column Flow"`) and the dashboard
+   spec with the first run. The app remembers the monitor's `nodeId` once it exists: after the
+   first run, `useWorkspaceTools(state).listApps()` → the `training_monitor` whose
+   `instanceName === NAME` → a `settings_changed { monitorNodeId }` event. Open it for the
+   person on that first click (a UI action may bring an app up; a background task may not).
+   Later runs: `group` = the sweep, `name` = the run; the monitor overlays them.
+3. **The app reads the monitor, it does not re-log it.** Grants
+   `"training_monitor:list_runs"`, `"training_monitor:analyze_run"`, `"training_monitor:read_run"`;
+   `callWorkspaceTool({ appType: "training_monitor", tool: "analyze_run", args: { run } })`
+   from an op — or `readAppState(monitorNodeId)` and read `stats`. Show the verdict beside the
+   app's own run record; link "open the monitor". The helper's log poll (30 s) is enough; the
+   monitor updates itself.
 
 A proof line for the drive: the run's log carries `[tracking] esoul monitor '<name>' … run
 '<run>'` AND `list_runs_<monitor>` shows that run within one flush interval. Both, or the mirror
