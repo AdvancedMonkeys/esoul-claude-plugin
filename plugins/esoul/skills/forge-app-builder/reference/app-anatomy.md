@@ -171,7 +171,7 @@ The rules the checks enforce and reviewers read for:
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { callPluginOp, PluginCallError } from "esoul-sdk";
-import { useAppCanEdit, usePluginEventDispatch, useViewer, useSignInWall, useWorkspaceTools, usePluginRealtime } from "esoul-sdk/react";
+import { useAppCanEdit, usePluginCurrentChatId, usePluginEventDispatch, useViewer, useSignInWall, useWorkspaceTools, usePluginRealtime } from "esoul-sdk/react";
 import { noteAddedEvent, type StickyNotesData } from "../app";
 import { PLUGIN_ID } from "../ops";
 
@@ -187,12 +187,14 @@ export function StickyNotesUi({ state }: { state: StickyNotesData }) {
   // wall.ask(() => op("my-orders")).then(r => r && setOrders(r))   — let the SERVER decide who is signed in
 }
 ```
+`usePluginCurrentChatId()` is the id of the chat the app is mounted beside — for a UI that hands
+something to the conversation (a "discuss this" button); `""` when there is none.
 
 - Props are `{ state }`, the folded state, live; you never fetch it.
 - Server truth: `callPluginOp` (rides the session; in a box it reaches the preview's op route).
   A `PluginCallError` carries a `code` (`forbidden`, `login-required`, `invalid`, `not-bound`) —
   relay its message; `wall.raise(err)` turns `login-required` into the wall.
-- Editors holding a local copy take remote changes through `useRemoteReconcile` (SDK docs/17),
+- Editors holding a local copy take remote changes through `useRemoteReconcile` (`packages/esoul-sdk/docs/17-editing-and-merging.md`),
   never a hand-rolled `useEffect` compare.
 - Theme, layout, touch, popovers, empty state: `design-rules.md`. A `/`-heavy component tree is
   fine; keep files under 512 KB and the app under 200 files.
@@ -240,7 +242,7 @@ paid by a stranger pressing "browse".
 ## 6. Tests — `<id>.test.ts`
 
 ```ts
-import { fakeViewer, memoryDb, memoryFiles, runOp } from "esoul-sdk/testing";
+import { fakeApps, fakeViewer, memoryDb, memoryFiles, roleForKind, runOp } from "esoul-sdk/testing";
 import { noteAddedEvent, pluginSchema, type StickyNotesData } from "./app";
 
 const IDENT = { workspaceId: "ws1", nodeId: "node1", applicationType: "plugin_sticky_notes", instanceName: "My wall" };
@@ -260,6 +262,11 @@ it("the describer never claims an emptiness it could not read", () => {
 });
 it("visitor-b cannot read visitor-a's row", async () => { /* memoryDb(manifest) + fakeViewer + runOp — data-people-files.md */ });
 ```
+`fakeApps({ slot: { nodeId?, tools } })` stands in for `ctx.apps.<slot>` (a bound app) and
+records every `call` so a test asserts the ARGUMENTS your op sent; `roleForKind(manifest,
+kind)` answers the word your `roles.default` gives a platform kind, so a test names the role the
+platform would — not a guess (its `member` is an EDIT member; pass `role` to `fakeViewer` for
+read-only).
 
 Tests must not import `node:*` (the wall runs over tests too). Local jest is `isolatedModules`:
 types are inert — `check_app` on the box is the bar. Keep tests fast; they run beside the preview.

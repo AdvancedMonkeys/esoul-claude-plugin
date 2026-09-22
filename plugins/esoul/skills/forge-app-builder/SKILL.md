@@ -54,6 +54,28 @@ Below, board tools are written without the suffix. No board? `create_app(applica
 without it refuses to open a workbench and says so — relay that, never work around it. Only the
 **workspace owner** may author on a board; a collaborator's chat is refused and told so.
 
+## Reading the SDK's own docs
+
+These references are the distilled rules. The SDK ships its full CONTRACT as text, and when a
+reference and the contract disagree, the contract wins — read it, and say which you used.
+
+**In a box, read the INSTALLED version** — it is what this app compiles against.
+`read_platform_file {path}` opens:
+- `packages/esoul-sdk/docs/<nn>-<chapter>.md` — 01 getting-started · 02 manifest · 03 events-and-state ·
+  04 tools · 05 ui · 06 server · 07 background-tasks · 08 connections · 09 files · 10 testing ·
+  11 shipping · 12 rules · 13 people-and-access · 14 database · 15 realtime · 16 bindings ·
+  17 editing-and-merging;
+- `packages/esoul-sdk/api-reference.md` — every export with its signature and doc comment; the
+  place to look ONE name up (`search_app_files {scope:"sdk", query:"<name>"}` finds it, and greps
+  the SDK's source too);
+- `packages/esoul-sdk/README.md`.
+
+**With no box open**, the published package: [npmjs.com/package/esoul-sdk](https://www.npmjs.com/package/esoul-sdk).
+Fetch `https://unpkg.com/esoul-sdk/llms.txt` (the index), then
+`https://cdn.jsdelivr.net/npm/esoul-sdk/llms-full.txt` (the whole contract in one file) or one
+chapter at `https://unpkg.com/esoul-sdk/docs/<nn>-<chapter>.md`. Published and installed can
+differ by a version — for an app that is open in a box, the box's copy is the truth.
+
 ## The flow: idea → app (details in `idea-to-app.md`)
 
 1. **Understand** — five questions, one message: who uses it (only them / invited people /

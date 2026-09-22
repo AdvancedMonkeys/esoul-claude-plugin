@@ -104,7 +104,28 @@ details only; use it to pre-fill, never to look someone up.
 `memoryDb(manifest)` + `runOp(pluginServer, op, { viewer, args, db: db.as(viewer) })`; the
 assertion that matters is that visitor-b's count of visitor-a's rows is **0**. In the box, VIEW
 AS (`look_at_app` / `drive_app` with `viewer: "visitor-b"`, or `visitor-a?grant=customer&customer=143`)
-photographs the screen each person gets — the one screen an author never sees otherwise.
+photographs the screen each person gets — the one screen an author never sees otherwise. Under
+the hood VIEW AS is `previewPersona()` (`esoul-sdk`): a preview writes the pretend person onto
+the window and every UI call carries it, so the server sees the same person the screen shows;
+outside a preview it is `null` and nothing is sent — never branch on it in app logic.
+
+**Roles the owner composes at runtime.** The vocabulary above is fixed at build; an owner may
+also compose a narrower word later — a "packer" who sees only orders being prepared — without a
+redeploy. The manifest declares the ENVELOPE such a role may narrow within, and the platform
+refuses any definition that would widen it:
+```json
+"roles": { "…": "…",
+  "custom": { "models": { "Order": { "where": ["status"], "hide": ["note"], "update": { "fields": ["note"], "transitions": "status" } } },
+              "ops": ["set-order-status", "fulfil-order"] } }
+```
+Server API (`esoul-sdk/server`), owner-only, every write appended to the app's own timeline:
+`defineAppRole(ctx, def)` composes or removes a word · `setAppRole(ctx, { email, role, attrs? })`
+gives one person one app's access (`role: ""` revokes; `attrs` typed by `roles.attributes`) ·
+`listAppRoles(ctx)` → everyone with a grant here and the words that exist · `removeAppRole`.
+A composed role reaches `ctx.viewer.customRole` / `ctx.viewer.custom` and the SAME rule engine
+narrows by it — nothing an app writes decides access. The full walk-through, with the packer, is
+`docs/13-people-and-access.md` → "Roles the owner composes" and "Giving one person access to
+one app" (how to read the SDK docs: `SKILL.md` → "Reading the SDK's own docs").
 
 ## 3. Connections — a service with a login
 
@@ -153,6 +174,15 @@ editor: change `seedKey` per image AND when its labels finish loading; `onSave` 
 sentence to show; the parent needs a height). Files work in a box through the box grant with no
 board tab. **A write in a box is a real write** — prove `write` on a scratch folder the person
 names, never on their dataset. Test ops with `memoryFiles(tree)` from `esoul-sdk/testing`.
+
+**Contributing a source of your own — `fileProviders`.** An app with a connection to a service
+that holds files (a DAM, an S3 bucket, a scanner) can CONTRIBUTE a mount: `"fileProviders":
+[{ "key": "acme-dam", "connectionKey": "acme", … }]` in the manifest, implemented as
+`pluginServer.fileProviders[key]` in `server.ts` — one mount per ACTIVE connection, listed in
+the Explorer beside Drive, readable by other apps that name your key in their `providers`. The
+key is globally unique across installed apps (host keys are reserved; the sync refuses a
+collision). In a box, `pluginFiles(ctx)` is the same files door on the box grant — what
+`filesForOp` gives an op after install. Both are in `docs/09-files.md`.
 
 ## 5. Public viewers and sharing
 
