@@ -270,3 +270,15 @@ read-only).
 
 Tests must not import `node:*` (the wall runs over tests too). Local jest is `isolatedModules`:
 types are inert — `check_app` on the box is the bar. Keep tests fast; they run beside the preview.
+
+## 7. `assets.json` — the app's media, by hash
+
+Written by the platform, never by hand, when you `put_app_asset` / `forge_put_asset`:
+
+```json
+{ "pluginId": "cafe-site", "files": { "hero.mp4": { "sha256": "…64 hex…", "bytes": 4120334, "type": "video/mp4" } } }
+```
+
+The bytes are not in the package — they sit in the platform's content-addressed store and are
+served immutable at `/pa/<pluginId>/<sha256>.<ext>`. In the app: `import assets from
+"./assets.json"` and `assetUrl(assets, "hero.mp4")` from `esoul-sdk`. See `assets.md`.

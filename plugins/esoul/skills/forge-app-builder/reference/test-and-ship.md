@@ -74,7 +74,9 @@ bug an owner had to photograph).
 
 ## 6. Shipping — two paths, one review
 
-**Into the platform** — `ship_app {message}` runs the checks, commits, pushes the app's branch,
+**Into the platform** — `ship_app {message}` runs the checks, commits, rebuilds the app's branch
+on the base (only the app's directory ever ships, so a squash-merged app can be shipped again
+with no conflict), pushes it, and
 opens (or updates) a pull request labelled `user-app` and `submitted-by:<you>`; refuses unless
 every check is green (`force:true` only past an ADVISORY, and only when the person decided).
 Give the PR URL — nothing reaches anyone's ExternalSoul until a person approves that diff. After
@@ -97,6 +99,10 @@ the build, the Inngest sync's answer, the entitlement). Updates are asked for (C
 (the hosted tool; the person can also use the picker or say "add <name>" in chat). Report the
 node id. Its tools are live in chat, voice, agents and MCP; `get_app_tools` on it shows them
 minted as `<verb>_<instance name>`.
+
+Over `esoul-mcp` the same steps are `forge_check` → `forge_ship(plugin_id, message)` → (after the
+person approves) `forge_merge(plugin_id, pr_number)` → `create_app`; `forge_commit` marks a
+milestone without a PR.
 
 ## 7. After install — what still needs a look
 

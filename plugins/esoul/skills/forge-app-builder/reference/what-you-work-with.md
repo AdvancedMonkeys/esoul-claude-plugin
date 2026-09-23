@@ -23,7 +23,7 @@ The **28 board tools**: `open_workbench`, `close_workbench`, `orient_app`, `list
 `read_app_file`, `search_app_files`, `read_platform_file`, `write_app_file`, `edit_app_file`,
 `delete_app_file`, `preview_app`, `look_at_app`, `drive_app`, `call_app_tool`, `read_app_state`,
 `test_app`, `check_app`, `run_in_app`, `app_problems`, `resolve_problem`, `commit_app`,
-`app_history`, `diff_app`, `restore_app`, `ship_app`, `merge_app`, `build_app`, `add_forge_task`.
+`app_history`, `diff_app`, `restore_app`, `put_app_asset`, `remove_app_asset`, `ship_app`, `merge_app`, `build_app`, `add_forge_task`.
 (The same handler serves the Python SDK's `esoul.forge` and the `esoul-mcp` server's `forge_*`
 tools for people on a Personal Access Token; the verbs and answers are the same.)
 

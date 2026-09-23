@@ -40,7 +40,7 @@ The rest is the contract, read as the app needs it:
 
 Over the hosted connection you have fifteen general tools (`list_workspaces`, `search_workspace`,
 `read_app_state`, `get_app_tools`, `call_app_tool`, `create_app`, …). **The Forge is an app** on
-the person's workspace (type `forge`, usually named "Forge"); its 28 workbench tools are minted
+the person's workspace (type `forge`, usually named "Forge"); its 30 workbench tools are minted
 as `<verb>_<board name>` and reached like any app's:
 
 ```
@@ -48,6 +48,15 @@ list_workspaces                                          → find the board's ap
 get_app_tools(<board id>)                                → open_workbench_Forge, write_app_file_Forge, …
 call_app_tool(<board id>, "open_workbench_Forge", {pluginId, name, description, icon})
 ```
+
+**Two doors, one handler.** The hosted connection (`/mcp/me`, OAuth, the account OWNER) drives
+the board's tools through `call_app_tool` as above. The local `esoul-mcp` server (`pip install
+esoul[mcp]`, a Personal Access Token) has the same verbs as `forge_*` tools — `forge_open`,
+`forge_write`, `forge_edit`, `forge_test`, `forge_check`, `forge_look`, `forge_drive`, `forge_tool`,
+`forge_put_asset`, `forge_commit`, `forge_ship`, `forge_merge`, `forge_close`, … — and, because it
+runs on the person's machine, it can read their disk: a film on their laptop reaches the app
+through `forge_put_asset(file=…)` and a whole local folder through `forge_sync`. Prefer it when
+the person has files to bring; either door is complete for everything else.
 
 Below, board tools are written without the suffix. No board? `create_app(application_type=
 "forge", name="Forge")`, then the person connects GitHub in Account settings → GitHub; a board
@@ -116,6 +125,11 @@ differ by a version — for an app that is open in a box, the box's copy is the 
    Files `.ts .tsx .json .css .md .txt .svg`, ≤ 512 KB each, ≤ 200 per app, paths ≤ 6 deep.
    The answer's `Preview: live (answered 200 in 0.9 s)` means that build is on screen;
    `Preview: DOWN — …` carries the compiler's own lines. Fix it first.
+   Images, films, fonts, PDFs are **assets**, not files: `put_app_asset {pluginId, name,
+   contentBase64 | sourceUrl}` (over esoul-mcp `forge_put_asset(file=…)` for anything on the
+   person's disk, up to 64 MB) stores the bytes content-addressed and writes `assets.json` for
+   you; the app renders `assetUrl(assets, "hero.mp4")` from `esoul-sdk` — one URL, the same in
+   the preview and installed. `assets.md` has the whole contract.
 4. `preview_app {pluginId, viewer?}` — starts the dev server (a minute cold, seconds warm) and
    puts the URL on the frame. Every later write hot-reloads.
 5. `look_at_app {pluginId, intent, viewer?}` — screenshots desktop-light, desktop-dark,
@@ -139,7 +153,9 @@ differ by a version — for an app that is open in a box, the box's copy is the 
 10. `commit_app {message}` at milestones; `app_history`, `diff_app {sha}`, `restore_app {sha}`
     (a restore is itself a checkpoint). `run_in_app {cmd}` runs one shell command in the app's
     directory (≤ 120 s; `npx jest x.test.ts`, `curl` the preview).
-11. `ship_app {message}` → the PR URL. `merge_app {prNumber}` after approval when the app
+11. `ship_app {message}` → the PR URL. The branch is rebuilt on the base first, so the pull
+    request is exactly this app's files against the base as it stands — an app shipped, merged
+    and improved ships again cleanly. `merge_app {prNumber}` after approval when the app
     belongs in the platform repo. `close_workbench` when done — a running box costs money; it
     idles out after 10 minutes anyway and reopening resumes.
 
