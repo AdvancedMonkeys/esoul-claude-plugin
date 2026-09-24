@@ -7,7 +7,7 @@ Call every op through `study_<name>` as `{op, args}`. `{op: "help"}` returns eac
 | op | what it does |
 |---|---|
 | `approve_plan` | THE approval: grants the budget, then freezes the objective, in one step. `{grant: {maxRounds, maxRuns, maxGpuHours, maxTokenUsd}}` |
-| `set_budget` | Grant or extend a budget without approving a plan. The preview is `{maxRounds: 0, maxRuns: 0, maxGpuHours: 0, maxTokenUsd: 8}` |
+| `set_budget` | Grant or extend a budget without approving a plan. The preview is `{maxRounds: 0, maxRuns: 0, maxGpuHours: 0, maxTokenUsd: 8}`. The FIRST grant starts the study and is refused (`no_computer`) until a computer reports live and ready |
 | `confirm_brief` | Freeze the objective alone (normally `approve_plan` does it) |
 | `decide_hint` | Accept or reject a hint the study appraised: `{hintId, decision: "accepted"｜"rejected"}` |
 | `decide_paper` | Adopt or decline a digested paper's proposal |
