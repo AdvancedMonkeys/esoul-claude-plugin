@@ -39,7 +39,7 @@ Then **play the brief back**: the four parts in their own words, plus the apps a
 `reference/machine.md` has the whole procedure. In short:
 - The machine needs a **My Computer** app in the same workspace, paired to it. If there is none, `create_app` with `application_type: "my_computer"`.
 - **Pairing:** `get_app_tools` on the My Computer app. If one of its tools returns a connect command, call it and give the person the command. Otherwise ask them to open the My Computer app, press **Connect**, and paste the command it shows into a terminal on the GPU machine. This is the one moment the web app is needed for setup.
-- **Then the research worker, on the machine:** give them the commands in `reference/machine.md` as one block. They are `pip install -U 'esoul[research]'`, `esoul-research install`, `esoul-research install-service`, and they need `tmux` and a logged-in `claude` CLI.
+- **The research worker comes with it:** on Linux the connect command also installs the research worker into `~/research/venv` and starts it as a service. It ends with a `research worker : running` line. It needs `tmux` and a logged-in `claude` CLI; if the line says NOT installed or NOT running, `reference/machine.md` §3 has the manual commands.
 - **Verify, never assume:** `study_<name>` `{op: "status"}` → `machines[].live` must be true. Until it is, nothing can run. Say so.
 
 ## 3. Declare the subject and write the brief

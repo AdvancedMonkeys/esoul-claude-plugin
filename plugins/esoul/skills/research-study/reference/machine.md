@@ -24,18 +24,23 @@ Ask the person to confirm each of these. Don't assume.
    - Otherwise ask them to open the My Computer app in esoul and press **Connect**. It shows one `curl … | bash -s -- install --code …` line. The code works once, for 15 minutes.
 3. They paste it into a terminal on the GPU machine. It ends by saying the machine is paired and assigned to that app.
 
-## 3. Install the research worker
+## 3. The research worker — installed by the connect command
 
-Give them this block to paste on the machine, in one piece:
+On Linux the connect command installs the research worker too, right after the agent: it creates `~/research/venv`, runs `pip install -U 'esoul[research]'`, `esoul-research install` (trainer venv, recipe library, a 2-step self-test) and `esoul-research install-service`, and starts it. Its summary ends with one of:
+
+- `research worker : running (esoul X)` — done.
+- `research worker : NOT installed — …` or `installed, NOT running — …` — the line names the cause (Python older than 3.10, no `python3-venv`, a failed pip). Fix that one thing and paste the connect command again; a second paste restarts nothing that is running.
+
+Pasting the connect command again later also upgrades the worker. An upgrade skips the GPU self-test and restarts only the worker; runs in progress carry on. `--no-research` at the end of the command (or `ESOUL_COMPUTER_RESEARCH=0`) leaves the worker out.
+
+By hand, on a machine where the connect command could not do it:
 
 ```bash
 pip install -U 'esoul[research]'
-esoul-research install          # builds the trainer venv, fetches the recipe library, runs a 2-step self-test — ends with READY or names what is wrong
+esoul-research install          # ends with READY or names what is wrong
 esoul-research install-service  # a systemd user service that survives a reboot
 esoul-research doctor           # read-only: prints every check again
 ```
-
-`install` must end with **READY**. If it names a problem (tmux, claude, disk, GPU), fix that one and run `install` again.
 
 ## 4. Verify from here
 
