@@ -20,9 +20,11 @@ Ask before you create anything. A study built on a guess spends GPU on the wrong
    - metric floors ("CoT accuracy must not drop below 0.40"). These become guardrails: a run that breaks one never counts, whatever else it did.
    - spend ("40 GPU-hours", "$20 of planning", "by Friday").
 4. **Success.** "When is it done? Which number, what value?" Get a threshold on a named metric ("≥ 0.55 GSM8K accuracy"), not "as good as possible".
-5. **Ideas.** "Anything you already suspect matters, or want tried first?" Each one becomes a hint the study must weigh.
-6. **Apps.** "Where do you want to read the results?" Default, which the person can take with "yes": a new sheet for every run, a kanban for the hypotheses, and a notes notebook for the synthesis. If they name an existing app, use it by that name.
-7. **The machine.** "Which machine runs it — which GPU? Is it already connected to esoul (a My Computer app)?"
+5. **Data.** "Which datasets does it use? Which one is held out? Is any of it already on the machine (a path), or does the repo download it itself?" Also ask "Anything the study must know about using them?" That becomes the data note, which the planning session reads first.
+6. **Papers and documents.** "Any papers, notes or specs it should read?" Each one becomes a PDF attached to the study.
+7. **Ideas.** "Anything you already suspect matters, or want tried first?" Each one becomes a hint the study must weigh.
+8. **Apps.** "Where do you want to read the results?" Default, which the person can take with "yes": a new sheet for every run, a kanban for the hypotheses, and a notes notebook for the synthesis. If they name an existing app, use it by that name.
+9. **The machine.** "Which machine runs it — which GPU? Is it already connected to esoul (a My Computer app)?"
 
 Then **play the brief back**: the four parts in their own words, plus the apps and the machine. Ask "Is this right?" Only after a yes, go on.
 
@@ -53,11 +55,19 @@ Then **play the brief back**: the four parts in their own words, plus the apps a
   ```
 
   The machine's first session turns this into the structured objective, parameter ranges and guardrails, because only it can see which metrics the code actually reports.
-- Ideas from §0.5: one `{op: "add_hint", args: {hintId: "h-<slug>", text}}` each. A hint from the person is accepted at once.
+- **Data:**
+  - `{op: "set_data_note", args: {text}}` holds how to use the data, in their words.
+  - Each dataset on the machine is `{op: "declare_source", args: {sourceId: "box_<slug>", kind: "box_folder", label, boxPath}}`.
+  - Its own note goes in `{op: "set_source_note", args: {sourceId, note}}`.
+  - Data the repo downloads itself needs only a line in the data note.
+- **Papers:** `upload_file` each PDF, then `{op: "attach_paper", args: {fileId, note}}`.
+- **Ideas** from §0.7: one `{op: "add_hint", args: {hintId: "h-<slug>", text}}` each. A hint from the person is accepted at once.
 
-## 4. The preview, then the one approval
+## 4. Start, then the one approval
 
-- **Ask first:** "Start the preview? One planning session on your machine reads the repo, writes the recipe, smoke-tests it and proposes a plan. Up to $8 of planning, no GPU runs." On yes: `{op: "set_budget", args: {maxRounds: 0, maxRuns: 0, maxGpuHours: 0, maxTokenUsd: 8}}`.
+- **Ask first, with his numbers:** "Start the study with 3 rounds, 20 runs, 4 GPU-hours and $30 of planning (the caps you gave)? The first session reads the repo, writes the recipe, smoke-tests it and proposes the objective. Nothing trains until you confirm it."
+  - On yes: `{op: "set_budget", args: {maxRounds, maxRuns, maxGpuHours, maxTokenUsd}}` with exactly those caps.
+  - If he wants to see a plan before committing any budget, start the preview instead: `{op: "set_budget", args: {maxRounds: 0, maxRuns: 0, maxGpuHours: 0, maxTokenUsd: 8}}`.
 - **Wait for the proposal.** Read `{op: "status"}`. Its `next` says what the study is waiting for. Don't poll in a tight loop: check every few minutes, and tell the person to watch the study in the web app meanwhile. The proposal is ready when `next` says "Approve the plan".
 - **Present it plainly** and ask for a yes. Read:
   - `{op: "overview"}` for the proposed objective, guardrails and success, and the `grant` ask with its numbers;
