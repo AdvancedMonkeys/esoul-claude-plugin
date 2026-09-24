@@ -57,7 +57,12 @@ Then **play the brief back**: the four parts in their own words, plus the apps a
   The machine's first session turns this into the structured objective, parameter ranges and guardrails, because only it can see which metrics the code actually reports.
 - **Data:**
   - `{op: "set_data_note", args: {text}}` holds how to use the data, in their words.
-  - Each dataset on the machine is `{op: "declare_source", args: {sourceId: "box_<slug>", kind: "box_folder", label, boxPath}}`.
+  - Add as many datasets as he names, one `declare_source` each:
+    - a link to download: `kind: "url", url`;
+    - a Google Drive folder: `resolve_drive_folder {path}`, then `kind: "drive_folder", driveFolderId`;
+    - a workspace folder: `list_folders`, then `kind: "workspace_folder", folderId`;
+    - a path on the machine: `kind: "box_folder", boxPath`.
+  - Each takes a `sourceId` you mint (`url_<slug>`, `drive_<slug>`, `box_<slug>`) and a `label`.
   - Its own note goes in `{op: "set_source_note", args: {sourceId, note}}`.
   - Data the repo downloads itself needs only a line in the data note.
 - **Papers:** `upload_file` each PDF, then `{op: "attach_paper", args: {fileId, note}}`.

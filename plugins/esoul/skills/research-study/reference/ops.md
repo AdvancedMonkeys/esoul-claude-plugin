@@ -19,7 +19,7 @@ Call every op through `study_<name>` as `{op, args}`. `{op: "help"}` returns eac
 | op | what it does |
 |---|---|
 | `set_brief` | The brief's prose, until approval. After approval the brief is frozen, so use `add_hint` |
-| `declare_source` | What the study is about: `kind: "repository"` with `repo: {url, ref?}`, `ollama_model`, or an image folder |
+| `declare_source` | The subject (`repository` with `repo: {url, ref?}`, or `ollama_model`) and every dataset: `url` (a link to download), `drive_folder`, `workspace_folder`, `box_folder` (a path on the machine). One call per dataset, as many as needed |
 | `add_hint` | An idea, a correction, or an answer to the study's question (`answersAsk`). A hint from the person is accepted at once |
 | `withdraw_experiments` | Stop runs: `{experimentIds}` or `{round}`, plus a `reason` |
 | `bind_app` | Which app holds runs / hypotheses / the notebook, or any role in the person's own words: `{role, app?, type?, how}` |
