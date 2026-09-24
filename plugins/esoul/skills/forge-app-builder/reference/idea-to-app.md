@@ -84,7 +84,7 @@ writing the next file.
 
 ## 5. Worked shapes
 
-**A research app** (a brief → a pipeline on the person's machine → results in the workspace):
+**A research app** (a brief → a pipeline on the person's machine → results in the workspace). *If what the person wants is to optimise their own training or benchmark code — the best config, ablations, "which knob matters" — do not build an app: that is the built-in research study, and the `research-study` skill drives it.* For a genuinely new research tool:
 fold = the brief, chosen folders, the machine, run records (queued/running/verdict); tables =
 none until results are per-person; server = ops `plan` (validates inputs, names what is
 excluded and why) / `start` (installs a small stdlib helper on the machine, starts the job

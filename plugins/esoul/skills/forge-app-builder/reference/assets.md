@@ -37,8 +37,10 @@ import { assetUrl } from "esoul-sdk";
 <img src={assetUrl(assets, "logo.webp")} alt="" />
 ```
 
-`assetUrl` THROWS on a name that is not in the manifest — a missing asset is a bug in the app, and
-a blank `<img>` would hide it. `assetUrlOrNull` is for an asset that is genuinely optional. Fonts go
+`assetUrl` never throws: a name that is not in the manifest logs once (`[esoul-sdk] asset "…" is not
+in assets.json`, with the names that exist) and returns an address that 404s — the `<img>` is empty
+and its `onError` fires, the page stays up. For an asset that may legitimately be missing (a film
+not recorded yet), use `assetUrlOrNull` and render a composed fallback instead. Fonts go
 through `@font-face { src: url(...) }` in a `<style>` string built from `assetUrl` (the wall forbids
 `next/font`). Never build a `/pa/...` string by hand and never re-derive the sha: the manifest is
 the only source, and it is only ever written by the platform.

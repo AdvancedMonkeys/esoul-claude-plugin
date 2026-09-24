@@ -5,6 +5,8 @@ description: ExternalSoul's Training Monitor app (`training_monitor`) — the wo
 
 # Training Monitor — the workspace's TensorBoard
 
+> **Optimising the person's own training code across many runs is a research study, not a monitor.** "Find the best config for my repo", "run ablations" and "which knobs matter": use the `research-study` skill. It runs the experiments on their machine, grades each one against a matched control, and keeps a runs sheet. Its runs still log curves here.
+
 One app instance is a **monitor**: it holds RUNS (a name, a group, config, status, step/epoch,
 per-metric curves, sample images, system stats, notes), draws them as a live instrument
 cluster, and lets an agent ask "is it improving?" as arithmetic, not vibes. The producer is

@@ -26,6 +26,7 @@ connection reaches every project and workspace on your account.
 | `math-explainer-video` | A narrated manim explainer, rendered in a sandbox and assembled into one mp4 |
 | `build-esoul-website` | A site, store or homepage built with the site app and published to your handle |
 | `forge-app-builder` | Turn an idea into a full ExternalSoul app in your Forge — events, tools that chat and voice call, server ops and streaming routes, durable tasks, your own tables and roles, realtime, files and Drive, other apps, your own computer — proven with tools in a live workbench before install |
+| `research-study` | Run an ML research study on your own repo and GPU from Claude: it interviews you (objective, constraints, success, apps), pairs your machine, gets one approval, and keeps a runs sheet, a hypotheses board and a notebook current while it experiments |
 | `training-monitor` | The workspace's TensorBoard: log a training loop with `esoul.track`, read curves and verdicts by tool, and wire a Forge app that trains on your own computer to it |
 | `block-notes` | Pages in folders — read, write, append, search, illustrate; the knowledge and documentation surface agents write into |
 | `slideshow` | Slides as live TSX on a 1280×720 canvas, edited by find/replace and judged by a vision critic; themes bundled |
