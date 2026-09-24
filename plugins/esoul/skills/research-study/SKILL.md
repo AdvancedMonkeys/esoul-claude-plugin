@@ -89,6 +89,15 @@ Then **play the brief back**: the four parts in their own words, plus the apps a
 
 ## When something is refused
 
+Every refusal from `study_<name>` carries a `guidance` block:
+- `stage`: where the study is;
+- `why`: why this op doesn't fit now;
+- `next`: the one act that moves it forward;
+- `canDoNow`: the ops that fit this stage;
+- `didYouMean`, for a misspelled op.
+
+Follow it rather than retrying. The table covers the refusals that need something from the person or the machine.
+
 | Answer | Meaning | Do |
 |---|---|---|
 | `human_only` | A decision op arrived from something other than the owner's own Claude | Ask the person. If they are the owner and still see this, the platform predates the MCP approval path — they approve in the web app |
