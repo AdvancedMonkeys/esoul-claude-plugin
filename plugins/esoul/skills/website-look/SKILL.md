@@ -34,22 +34,26 @@ true colours, no text, no logos, no faces"). The subject changes per image; the 
 does. Make 3 variants per image, pick one, and discard the rest honestly — a weak image hurts
 more than no image.
 
-## 3. Where images come from (today)
+## 3. Where images come from
 
 - **The owner's photos** — best, always. Ask for them. Hero ≤ 1920 px wide, 200–300 KB.
 - **Drawn plates / SVG** — authored as text, crisp at any size, themable: the no-photo recipe
   and drawn blocks in `build-esoul-website`.
-- **Generated stills** — in ExternalSoul's own chat ("generate an image: <subject>. <style
-  string>"): the image lands in the workspace's files, where `list_files` finds it. When
-  `generate_image` arrives on the MCP, call it directly with the same prompt.
+- **Generated stills** — `generate_image {workspace_id, prompt: "<subject>. <style string>",
+  aspect_ratio, name, folder: "Site/Images", format: "webp", max_width: 1920}`. Draft with
+  `model: "cheapest"`, then the final with the default (best at legible text and at editing a
+  `references` photo of the owner's). `media_models` lists what each model is for and costs;
+  `dry_run: true` answers the price for free — show it to the owner before a batch.
 
 ## 4. Motion
 
 - **Films of the real thing** beat any animation: `website-films`.
-- **Moving backgrounds** (a sea, clouds, leaves behind the hero): today, a short, calm film you
-  record or already own, looped, muted, dimmed under the text. When `generate_video` arrives on
-  the MCP, generate a 6–8 s seamless loop with the same style string ("…seamless loop, static
-  camera, slow natural motion, no people, no text").
+- **Moving backgrounds** (a sea, clouds, leaves behind the hero): `generate_video {prompt:
+  "<scene>. <style string>. Static camera, slow natural motion, no people, no text",
+  duration_seconds: 6–8, loop: true, webp: true, folder: "Site/Films"}` — a durable job: poll
+  `generation_status {generation_id, wait_seconds: 50}` until done (1–5 min). `loop` crossfades
+  the end into the start; the poster JPEG is always made. Try `model: "cheapest"` first; one
+  default clip is about $1 — price it with `dry_run` and ask. Or a calm clip the owner owns.
 - **CSS motion** (Forge sites): reveal on scroll, a slow Ken Burns on a still — 400–700 ms,
   eased, never bouncing.
 - **Always** honour `prefers-reduced-motion`: films show their poster, reveals appear at once.

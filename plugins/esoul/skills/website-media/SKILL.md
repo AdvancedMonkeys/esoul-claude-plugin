@@ -47,8 +47,9 @@ has no native video; YouTube/Vimeo go in an `Embed` block. Block details: `build
 App assets are content-addressed and served immutable at `/pa/<app>/<hash>.<ext>` — the same
 URL in the preview, installed, and on a custom domain, cached forever.
 
-- `call_app_tool(board, "put_app_asset_<board>", {pluginId, name, sourceUrl})` with the
-  public URL `list_files` gave you (≤ 64 MB), or `contentBase64` for a small file (≤ 3 MB).
+- `call_app_tool(board, "put_app_asset_<board>", {pluginId, name, fileId})` with the file's id
+  from `list_files` (or a generation's `file.id`); or `sourceUrl` (a public URL, ≤ 64 MB), or
+  `contentBase64` for a small file (≤ 3 MB).
 - In the app: `import assets from "./assets.json"` and `assetUrl(assets, "film-booking.mp4")`
   from esoul-sdk. The platform writes `assets.json`; never edit it by hand.
 - A film: `<video src=… poster=… muted playsInline loop autoPlay preload="metadata">`; play
@@ -62,5 +63,9 @@ Open the published page's network panel (or `screenshot_page_<site>` for a Site 
 look at the files list): the first screen should load under ~1.5 MB. Films below the fold load
 lazily; heavier than budget → shorten, narrow, or cut to a poster with a play button.
 
-**Coming:** `generate_image` / `generate_video` on the MCP will write straight to the
-workspace's files — the same names, the same steps from §3 on.
+## 6. Generated media
+
+`generate_image` / `generate_video` write straight to the workspace's files: pass `name` and
+`folder` so they land named as §1 asks, `format: "webp"` + `max_width` for stills. A clip comes
+with its poster (`<name>.jpg`) and, with `webp: true`, the animated WebP. Then §3 or §4 as for
+any file — a Forge app takes each by id: `put_app_asset_<board> {pluginId, name, fileId}`.

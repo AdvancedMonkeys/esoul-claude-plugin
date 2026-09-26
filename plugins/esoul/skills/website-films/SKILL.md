@@ -79,5 +79,6 @@ cheap. A failed run leaves `failed.png`: the screen at the moment it broke.
 | animated WebP 800 px, 12 fps | Site app (an Image block) | 2 MB — shorten the film first, then narrow it |
 | poster jpg | every film; what shows before play and under reduced motion | 250 KB |
 
-Then: `website-media` puts them on the site. When `generate_video` arrives on the MCP it will
-make atmosphere loops (skies, water); films of the product stay recorded, never generated.
+Then: `website-media` puts them on the site. `generate_video` makes atmosphere loops (skies,
+water — `website-look` §4); films of the product stay recorded, never generated: a generated
+"product film" shows a product that does not exist.

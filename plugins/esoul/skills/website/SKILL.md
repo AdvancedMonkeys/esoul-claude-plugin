@@ -42,14 +42,14 @@ interaction, a layout the vocabulary lacks) or already has a Forge board.
 
 `list_workspaces`, `list_project_tree`, `create_workspace`, `create_app`, `get_app_tools`,
 `call_app_tool`, `read_app_state`, `upload_file`, `list_files`, `view_image`,
-`publish_homepage`. A site's own tools (`replace_page_<site>`, `screenshot_page_<site>`,
+`media_models`, `generate_image`, `generate_video`, `generation_status`, `publish_homepage`. A site's own tools (`replace_page_<site>`, `screenshot_page_<site>`,
 `critique_page_<site>`, …) and a Forge board's (`put_app_asset_<board>`, `look_at_app_<board>`,
 …) are reached with `call_app_tool` after `get_app_tools`. Films are recorded on THIS machine
 by the recorder bundled in `website-films` (Node + Chrome + ffmpeg).
 
-**Coming:** `generate_image` and `generate_video` on the MCP. Until they arrive, generated
-images are made in ExternalSoul's own chat (it saves them to the workspace's files); moving
-backgrounds are films or CSS motion (`website-look`).
+**Generated images and clips** land in the workspace's files (`website-look` says what to ask
+for, `website-media` how to place them). They spend the owner's credits: show the price first
+(`dry_run: true` answers it for free) and draft with `model: "cheapest"`.
 
 ## Rules that hold across every stage
 

@@ -126,7 +126,8 @@ differ by a version — for an app that is open in a box, the box's copy is the 
    The answer's `Preview: live (answered 200 in 0.9 s)` means that build is on screen;
    `Preview: DOWN — …` carries the compiler's own lines. Fix it first.
    Images, films, fonts, PDFs are **assets**, not files: `put_app_asset {pluginId, name,
-   contentBase64 | sourceUrl}` (over esoul-mcp `forge_put_asset(file=…)` for anything on the
+   fileId | contentBase64 | sourceUrl}` (`fileId`: a workspace file, e.g. what `generate_image` /
+   `generate_video` made; over esoul-mcp `forge_put_asset(file=…)` for anything on the
    person's disk, up to 64 MB) stores the bytes content-addressed and writes `assets.json` for
    you; the app renders `assetUrl(assets, "hero.mp4")` from `esoul-sdk` — one URL, the same in
    the preview and installed. `assets.md` has the whole contract.

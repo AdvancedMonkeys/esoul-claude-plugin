@@ -10,16 +10,19 @@ custom domain. There is nothing to configure and no environment switch to write.
 
 ## Put one
 
-Board tool: `put_app_asset {pluginId, name, contentBase64 | sourceUrl}`.
-Over MCP (esoul-mcp): `forge_put_asset(plugin_id, name, file= | source_url= | content_base64=)`.
-SDK: `wb.put_asset("hero.mp4", file="./hero.mp4")`.
+Board tool: `put_app_asset {pluginId, name, fileId | contentBase64 | sourceUrl}`.
+Over MCP (esoul-mcp): `forge_put_asset(plugin_id, name, file_id= | file= | source_url= | content_base64=)`.
+SDK: `wb.put_asset("hero.mp4", file="./hero.mp4")` or `wb.put_asset("hero.mp4", file_id=...)`.
 
 - `name` is the file's name inside the app — `hero.mp4`, `logo.webp`, `brand.woff2`. Allowed:
   `webp png jpg jpeg gif avif svg mp4 webm mp3 m4a woff2 woff pdf json`. Never a script, never a page.
 - **`file`** (esoul-mcp / SDK only — it reads the customer's own disk) takes anything up to 64 MB;
   big files stream straight to the store, small ones ride inline. This is the arm for a film.
+- **`fileId`** is a workspace file — anything `list_files` lists, and what `generate_image` /
+  `generate_video` made (their answer's `file.id`, `poster.id`, `webp.id`). The platform reads it
+  itself; the board's owner must reach the file's workspace.
 - **`sourceUrl`** is a public https URL the platform fetches (≤ 64 MB) — a photo on the web, a
-  file already in the workspace (`list_files` gives its URL), a render a task produced.
+  render a task produced.
 - **`contentBase64`** is for what a model can author itself — an SVG, a tiny PNG — and is capped
   at 3 MB. Do not paste a film through it; the tool says so and names the other arms.
 
