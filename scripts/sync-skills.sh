@@ -12,7 +12,7 @@ set -euo pipefail
 KINETIC="${1:?usage: sync-skills.sh /path/to/kinetic}"
 SRC="$KINETIC/scripts/skills/desktop"
 DST="$(cd "$(dirname "$0")/.." && pwd)/plugins/esoul/skills"
-HOSTED=(memory browser-use forge-app-builder math-explainer-video block-notes slideshow training-monitor research-study)
+HOSTED=(memory browser-use forge-app-builder math-explainer-video block-notes slideshow training-monitor research-study website website-story website-look website-films website-media website-publish)
 for s in "${HOSTED[@]}"; do
   [ -f "$SRC/$s/SKILL.md" ] || { echo "missing source: $s" >&2; exit 1; }
   rm -rf "${DST:?}/$s"; mkdir -p "$DST/$s"

@@ -5,6 +5,12 @@ description: Build a great-looking public website (a homepage, a business site, 
 
 # Build a website on esoul with the site app tools
 
+> **Part of the website skills.** Start at `website` (the sequence and the path). Before building:
+> `website-story` (the copy), `website-look` (palette, fonts, image style), `website-films` (real
+> films, recorded on this machine), `website-media` (getting images and films onto the site).
+> After: `website-publish` (checks on every screen, SEO text, domain). This file is the BLOCK
+> MANUAL for the Site-app path — its tools, vocabulary, palettes and rhythm.
+
 You have the esoul MCP and this file. The site app is a real website builder that is also an
 app: pages are blocks (Puck data), the owner edits every text inline afterwards, agents and the
 owner use the SAME tools. Everything below was learned building three real sites: a florist's

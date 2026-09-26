@@ -25,7 +25,13 @@ connection reaches every project and workspace on your account.
 | `memory` | Lifelong recall: "remember that list we made last spring?", "what did I tweet about this years ago?", "who changed the sales sheet this week?" — past work sessions, versioned facts and all dated content in one `recall`, with each thing's status today and a link that opens it |
 | `setup` | Connect or repair the connection (a sign-in — never a token) |
 | `math-explainer-video` | A narrated manim explainer, rendered in a sandbox and assembled into one mp4 |
-| `build-esoul-website` | A site, store or homepage built with the site app and published to your handle |
+| `website` | Make a website people want to stay on — the sequence from story to published domain; starts the five below |
+| `website-story` | Who it is for, the chapters, every line of copy in the owner's voice |
+| `website-look` | Palette, fonts, one accent, a house style string for every image, motion that does not hurt |
+| `website-films` | Real films of the real product — drawn cursor, real timing, cuts, posters, animated WebP; ships the recorder |
+| `website-media` | Images and films onto the site: workspace files for a Site app, app assets for a Forge app |
+| `website-publish` | Every screen, both themes, contrast, weight, reduced motion (ships the checker); SEO text, homepage, domain |
+| `build-esoul-website` | The Site-app block manual: tools, block vocabulary, tested palettes, section rhythm — a site, store or homepage published to your handle |
 | `forge-app-builder` | Turn an idea into a full ExternalSoul app in your Forge — events, tools that chat and voice call, server ops and streaming routes, durable tasks, your own tables and roles, realtime, files and Drive, other apps, your own computer — proven with tools in a live workbench before install |
 | `research-study` | Run an ML research study on your own repo and GPU from Claude: it interviews you (objective, constraints, success, apps), pairs your machine, gets one approval, and keeps a runs sheet, a hypotheses board and a notebook current while it experiments |
 | `training-monitor` | The workspace's TensorBoard: log a training loop with `esoul.track`, read curves and verdicts by tool, and wire a Forge app that trains on your own computer to it |
