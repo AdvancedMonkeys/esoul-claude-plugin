@@ -1,32 +1,34 @@
 ---
-description: Ground yourself in this project's ExternalSoul memory, and write back what is worth keeping.
+description: Recall what your ExternalSoul memory holds about this project (or about the argument), and keep what is worth keeping.
 ---
 
-Use the ExternalSoul workspace as durable memory for this project, so what you
-learn here survives the session.
+Use the user's lifelong ExternalSoul memory. Follow the `memory` skill; this is the short form.
 
-## Recall first
+## Recall
 
-1. `search_workspace` for the project you are in — its name, the repo, the
-   thing you are about to work on. Search spans every workspace you own.
-2. For each promising hit, `read_app_entry` with the returned `app_id` and
-   `entry_key`. Read only the entries that matter; do not load whole apps.
-3. Report briefly: what you already knew about this project, and what is
-   missing. Name the facts that bear on the work — do not restate everything.
+Topic: $ARGUMENTS. If that is empty, use this project: the repo name, what it builds, and what you are about to work on.
 
-If the user gave an argument, use it as the search query: $ARGUMENTS
+1. `recall({query: <the topic in plain words>})`. If the user named a time, pass it verbatim as `when`.
+   One call searches past work sessions, remembered facts and all workspace content.
+2. Open only what matters. Use `read_app_entry` (one page or sheet) or `read_app_state` with the ids
+   recall returned.
+3. Report briefly:
+   - what is already known: dates, decisions, where things live, each artifact's status today (renamed, deleted or in Recently deleted, said plainly), and its `link`;
+   - what is missing.
 
-## Write back
+   If `selected_by` says "similarity only", judge relevance yourself. If nothing fits, say so. Never
+   guess.
 
-When you learn something worth keeping — a decision and its reasoning, a
-constraint, a preference, a hard-won gotcha — put it in a notes app:
+If `recall` is not in your tool list (you are connected to someone else's storefront, not your own
+`/mcp/me`), use `search_workspace` → `read_app_entry` instead, and say remembering is unavailable here.
 
-- find an existing notes app with `list_workspaces` (look for a
-  `block_note_editor`), or make one with
-  `create_app({application_type: "block_note_editor", name: "Memory"})`;
-- `get_app_tools` on it, then `call_app_tool` with `create_page_*` or
-  `append_to_page_*` to add what you learned.
+## Keep
 
-Prefer appending to a page that already covers the topic over creating a new
-one. Save what would be expensive to rediscover — not what the repository
-already records.
+When the user states something durable, call `remember({text})` with one fact per call, as a full
+sentence that stands alone. Examples: a decision and its reason, a constraint, a preference, who someone
+is, where something lives.
+
+A correction is a new `remember` under the same `subject` that recall returned. The old version is
+kept as history. Work done in apps is recorded automatically, so do not re-log it.
+
+Never create a separate "Memory" notes app for facts; `remember` is the one memory.

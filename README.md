@@ -21,7 +21,8 @@ connection reaches every project and workspace on your account.
 | Component | What it does |
 |---|---|
 | `esoul` connection | Your own account over OAuth — list, read, search, create apps and workspaces, and drive any app through its own tools |
-| `/esoul:memory` | Recall what you already know about this project from your workspace, and write back what is worth keeping |
+| `/esoul:memory` | Recall what your ExternalSoul memory holds about this project (or any topic), and keep what is worth keeping |
+| `memory` | Lifelong recall: "remember that list we made last spring?", "what did I tweet about this years ago?", "who changed the sales sheet this week?" — past work sessions, versioned facts and all dated content in one `recall`, with each thing's status today and a link that opens it |
 | `setup` | Connect or repair the connection (a sign-in — never a token) |
 | `math-explainer-video` | A narrated manim explainer, rendered in a sandbox and assembled into one mp4 |
 | `build-esoul-website` | A site, store or homepage built with the site app and published to your handle |
