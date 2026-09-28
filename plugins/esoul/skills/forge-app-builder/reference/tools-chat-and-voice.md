@@ -74,7 +74,7 @@ and take it away before shipping:
   `if (ctx.viewer.kind !== "owner" && ctx.viewer.kind !== "internal") throw new Refusal("forbidden", "test door")`.
 - Use them from `call_app_tool` to set up a state, then drive the REAL tools and the UI against
   it; read the result with the real read tool and `read_app_state`.
-- Before `ship_app`: `search_app_files {query:"__test"}` must find nothing in `app.tsx`,
+- Before `install_app`: `search_app_files {query:"__test"}` must find nothing in `app.tsx`,
   `ops.ts`, `server.ts` or `plugin.json`. Keep the assertions in `<id>.test.ts` (which may call
   the product's ops directly with `runOp`), not the doors. `check_app` after the removal.
 

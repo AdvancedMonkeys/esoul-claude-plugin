@@ -1,4 +1,4 @@
-# Prove it with tools, then ship it
+# Prove it with tools, then install it
 
 "It renders" is not "it works". Every arm of the app is proven by a tool before a person is
 asked to look, and the evidence is what you report.
@@ -59,7 +59,7 @@ rows", list them, resolve only what is fixed, name what remains and why. A refus
 have an empty reason ("the bridge did not come up: " with nothing after the colon was the first
 bug an owner had to photograph).
 
-## 5. Before `ship_app` — the checklist
+## 5. Before `install_app` — the checklist
 
 - [ ] ⚠ paragraph clean on the last five answers; every journal row resolved or explained.
 - [ ] `look_at_app` in both themes and on the phone, as every persona the app has.
@@ -67,42 +67,43 @@ bug an owner had to photograph).
       visitor-a's.
 - [ ] Every UI action has a tool twin; `call_app_tool` on each; refusals are words, not throws.
 - [ ] `__test` doors removed; `test_app` green; `check_app` three green, none `skipped`.
-- [ ] `plugin.json`: `version` bumped; every op/route/task with its access; every grant, public
-      door, connection and file source present and explained in your message to the person.
+- [ ] `plugin.json`: `version` bumped; `name`, `description` and `icon` read well — the install page
+      shows them, and every tool's description, to the person before they press Install; every
+      op/route/task with its access; every grant, public door, connection and file source present
+      and explained in your message to the person.
 - [ ] No secret anywhere; no `fetch("/api/v1/…")`; no `@/` import; `app.tsx` not `"use client"`.
-- [ ] `commit_app` at the milestones so the branch reads like a story.
+- [ ] `commit_app` at the milestones so the saved versions read like a story (the platform keeps
+      every checkpoint; `restore_app` reaches any of them).
 
-## 6. Shipping — two paths, one review
+## 6. Installing — one call, nothing to configure
 
-**Into the platform** — `ship_app {message}` runs the checks, commits, rebuilds the app's branch
-on the base (only the app's directory ever ships, so a squash-merged app can be shipped again
-with no conflict), pushes it, and
-opens (or updates) a pull request labelled `user-app` and `submitted-by:<you>`; refuses unless
-every check is green (`force:true` only past an ADVISORY, and only when the person decided).
-Give the PR URL — nothing reaches anyone's ExternalSoul until a person approves that diff. After
-approval: the owner's release script (or `merge_app {prNumber}` for the owner's own apps) runs
-the wall, sync, tests, types, merges declared npm dependencies onto the branch, squash-merges,
-waits for the deploy (7–10 min), grants the submitter the **entitlement**, and tells the board
-"released — add it to a workspace". A released app is the submitter's alone until the owner makes
-it public.
+`install_app {pluginId}` takes the app's last SAVED version (the platform mirrors every checkpoint of
+the box into its own repository — the board's Saved row says which), runs the platform's checks
+(the import wall over every file, the manifest and its limits, the tables it would add — a
+destructive change is refused with the column named), hands the build the app's files, adds the app
+to the platform's build, waits for the deploy (about seven minutes), registers its tasks, and makes
+it the person's: it appears in **Add an app** in every workspace they own. Follow it with
+`install_app {pluginId, status:true}`; the answer is the step in plain words — *Checking the app ·
+Creating its tables · Handing the build its files · Adding it to the platform · Building · Registering
+its tasks · Making it yours · Live* — or *Failed* with the reason. An app already installed is
+UPDATED the same way. Tell the person when it says Live, and what changed.
 
-**To the app's own repository** — the board's REPOSITORY row: create a repo (private by default)
-or link one, then **Open pull request** exports the app directory as one commit on branch
-`forge/<id>` (never forced; `main` never written directly); the message carries the journal
-resolutions since the last push — write them as a changelog. The owner installs it by link in
-**Settings → Apps**: Inspect (manifest, wall over every file, undeclared deps, the tables it
-would add, every refusal verbatim) → Install → one durable job (a one-line `apps.lock.json` pin,
-the build, the Inngest sync's answer, the entitlement). Updates are asked for (Check for updates
-→ Update to <sha>); Uninstall keeps every instance's timeline and every table.
+The person can do the same from the board: the **Install to esoul** button on the Saved row opens
+the install page (icon, name, description, what the app declares, every tool with its words) and
+Install. Whatever they change there lands in `plugin.json` as a checkpoint — read it back before you
+write the manifest again.
+
+There is no pull request, no review queue and no GitHub in this path. `ship_app` / `merge_app` exist
+for the platform owner's own boards that are clones of the platform; a plain box refuses them and
+says to use `install_app`.
 
 **Then** `create_app(application_type="plugin_<id_with_underscores>", name="…")` on a workspace
 (the hosted tool; the person can also use the picker or say "add <name>" in chat). Report the
 node id. Its tools are live in chat, voice, agents and MCP; `get_app_tools` on it shows them
 minted as `<verb>_<instance name>`.
 
-Over `esoul-mcp` the same steps are `forge_check` → `forge_ship(plugin_id, message)` → (after the
-person approves) `forge_merge(plugin_id, pr_number)` → `create_app`; `forge_commit` marks a
-milestone without a PR.
+Over `esoul-mcp` the same steps are `forge_check` → `forge_install(plugin_id)` → `create_app`;
+`forge_commit` marks a milestone.
 
 ## 7. After install — what still needs a look
 
@@ -117,8 +118,8 @@ milestone without a PR.
 
 ## 8. Words to use and not use
 
-"Shipped" = the PR URL. "Merged" = the merge result. "Released" = the board said so.
-"Installed" = the new instance's node id. "Works" = the drive that proved it, as whom. "Ready" =
+"Installing" = `install_app` answered with its steps. "Live" = `install_app {status:true}` said
+so. "Installed" = the new instance's node id. "Works" = the drive that proved it, as whom. "Ready" =
 `check_app` three green. A red or `skipped` gate is reported with its name and detail; a preview
 that will not come up is quoted in the compiler's words; a thing you did not run is a thing you
 do not claim.

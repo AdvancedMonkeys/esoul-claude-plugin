@@ -10,13 +10,15 @@ page. It sits beside their spreadsheets and mail, holds its state as typed event
 shared timeline (scrubbable, replayable), exposes tools that chat, voice, agents and MCP call,
 can bring its own server (ops, streaming routes, webhooks), durable background tasks, its own
 database tables, realtime channels, the workspace's files and Google Drive, other apps' tools,
-and the person's own computer. The Forge gives you a cloud machine holding the platform with
-your app on its own branch; you see it running in the person's frame within seconds and prove
-every arm with tools before a human reads the diff and installs it.
+and the person's own computer. The Forge gives you a cloud BOX — a plain Node project holding
+`esoul-sdk` and the app host from npm, nothing of the platform, nothing the person configures —
+with your app at `src/plugins/<id>`; you see it running in the person's frame within seconds,
+prove every arm with tools, and install it into their esoul with one call. The platform keeps
+every version (the board's SAVED row); the person never touches GitHub.
 
-**You are the only model in this loop.** Nothing writes the app but you; nothing is installed
-until a person has read it. Write as if they are reading over your shoulder — they are (the
-board shows every file, diff, checkpoint and tool call).
+**You are the only model in this loop.** Nothing writes the app but you. Write as if the person
+is reading over your shoulder — they are (the board shows every file, diff, checkpoint and tool
+call), and the install page shows them every tool you declared, in your words.
 
 Read `reference/what-you-work-with.md` FIRST — the surfaces you have, what a preview can and
 cannot do, every cap, and what things cost. Then `reference/idea-to-app.md` for the flow.
@@ -34,7 +36,7 @@ The rest is the contract, read as the app needs it:
 | `data-people-files.md` | your own tables and rules, roles and access levels, connections, files and Drive, public viewers |
 | `telling-people-later.md` | notifying a person AFTER the request: a status change, a cadence, a first visit — the recipient table, the task, the email app on the workspace |
 | `design-rules.md` | what "native" and "responsive" mean here; the pre-ship checklist |
-| `test-and-ship.md` | proving every arm with tools, the problem journal, removing test tools, shipping and installing |
+| `test-and-ship.md` | proving every arm with tools, the problem journal, removing test tools, installing (one call) |
 
 ## Where the tools are
 
@@ -59,9 +61,9 @@ through `forge_put_asset(file=…)` and a whole local folder through `forge_sync
 the person has files to bring; either door is complete for everything else.
 
 Below, board tools are written without the suffix. No board? `create_app(application_type=
-"forge", name="Forge")`, then the person connects GitHub in Account settings → GitHub; a board
-without it refuses to open a workbench and says so — relay that, never work around it. Only the
-**workspace owner** may author on a board; a collaborator's chat is refused and told so.
+"forge", name="Forge")` on the person's workspace — that is the whole setup. **No GitHub, no
+keys, no settings**: `open_workbench` needs nothing from the person. Only the **workspace owner**
+may author on a board; a collaborator's chat is refused and told so.
 
 ## Reading the SDK's own docs
 
@@ -69,15 +71,16 @@ These references are the distilled rules. The SDK ships its full CONTRACT as tex
 reference and the contract disagree, the contract wins — read it, and say which you used.
 
 **In a box, read the INSTALLED version** — it is what this app compiles against.
-`read_platform_file {path}` opens:
-- `packages/esoul-sdk/docs/<nn>-<chapter>.md` — 01 getting-started · 02 manifest · 03 events-and-state ·
+`read_platform_file {path}` opens (the box holds the npm package, so its docs live under
+`node_modules/esoul-sdk/`; the SDK's sources are at `packages/esoul-sdk/src/`):
+- `node_modules/esoul-sdk/docs/<nn>-<chapter>.md` — 01 getting-started · 02 manifest · 03 events-and-state ·
   04 tools · 05 ui · 06 server · 07 background-tasks · 08 connections · 09 files · 10 testing ·
   11 shipping · 12 rules · 13 people-and-access · 14 database · 15 realtime · 16 bindings ·
   17 editing-and-merging;
-- `packages/esoul-sdk/api-reference.md` — every export with its signature and doc comment; the
+- `node_modules/esoul-sdk/api-reference.md` — every export with its signature and doc comment; the
   place to look ONE name up (`search_app_files {scope:"sdk", query:"<name>"}` finds it, and greps
   the SDK's source too);
-- `packages/esoul-sdk/README.md`.
+- `node_modules/esoul-sdk/README.md`, `node_modules/esoul-sdk/llms-full.txt` (the whole contract).
 
 **With no box open**, the published package: [npmjs.com/package/esoul-sdk](https://www.npmjs.com/package/esoul-sdk).
 Fetch `https://unpkg.com/esoul-sdk/llms.txt` (the index), then
@@ -105,17 +108,21 @@ differ by a version — for an app that is open in a box, the box's copy is the 
 5. **Iterate with the person** — they play with the build in their frame and tell you what is
    wrong; keep rounds small; `look_at_app` after a visual change, a drive after a behaviour
    change. Resolve the journal rows you fixed (`resolve_problem`), honestly.
-6. **Ship** — `check_app` green (no `skipped`), test tools gone, version bumped, `ship_app`.
-   Give the PR URL. After review and release: `create_app(application_type="plugin_<id>",
-   name=…)` puts it on a workspace — its tools are live in chat, voice, agents and MCP.
+6. **Install** — `check_app` green (no `skipped`), test tools gone, version bumped, the
+   manifest's name / description / icon reading well (the install page shows them and every
+   tool's description), then `install_app`. Follow it with `install_app {status:true}` until it
+   says **Live** (about seven minutes: checks → tables → the build → registering tasks → theirs).
+   Then `create_app(application_type="plugin_<id>", name=…)` puts it on a workspace — its tools
+   are live in chat, voice, agents and MCP. No pull request, no review queue, no GitHub.
 
 ## The loop, tool by tool
 
 1. `open_workbench {pluginId, name, description, icon}` — `pluginId` lower-case with dashes;
-   `icon` a lucide name (the tool lists the allowed ones when yours is wrong). First open on a
-   board: minutes (clone + install); later apps: seconds. Reopening resumes and merges the
-   platform's `main` into the box. Answers with what the box can do (`tasks, ops, routes,
-   realtime, viewer, db`) — if that line is missing, `close_workbench` and open again.
+   `icon` a lucide name (the tool lists the allowed ones when yours is wrong). The first box
+   takes about a minute (npm install); later ones fork a warm base in seconds. Reopening
+   resumes. Answers with what the box can do (`tasks, ops, routes, realtime, viewer, db`) — if
+   that line is missing, `close_workbench` and open again. Every checkpoint you make is SAVED by
+   the platform (the board's Saved row: v12 · 2 min ago); `restore_app` goes back to any of them.
 2. `orient_app` (an app you did not write this conversation) or `list_app_files` +
    `read_app_file {pluginId, path, from?, lines?}`. `search_app_files {query, glob?, regex?,
    scope:"app"|"sdk"}` greps the app, or the SDK's source and docs; `read_platform_file` opens
@@ -154,14 +161,14 @@ differ by a version — for an app that is open in a box, the box's copy is the 
 10. `commit_app {message}` at milestones; `app_history`, `diff_app {sha}`, `restore_app {sha}`
     (a restore is itself a checkpoint). `run_in_app {cmd}` runs one shell command in the app's
     directory (≤ 120 s; `npx jest x.test.ts`, `curl` the preview).
-11. `ship_app {message}` → the PR URL. The branch is rebuilt on the base first, so the pull
-    request is exactly this app's files against the base as it stands — an app shipped, merged
-    and improved ships again cleanly. `merge_app {prNumber}` after approval when the app
-    belongs in the platform repo. `close_workbench` when done — a running box costs money; it
-    idles out after 10 minutes anyway and reopening resumes.
+11. `install_app {pluginId}` → the install starts (or an UPDATE, when the app is already
+    installed); `install_app {pluginId, status:true}` follows it step by step until **Live**, when
+    the app is in the person's Add an app. `close_workbench` when done — a running box costs
+    money; it idles out after 10 minutes anyway and reopening resumes.
 
-`build_app {brief}` hands a brief to an unattended agent. Use it only when the person wants to
-walk away; when they are present the workbench is the honest choice.
+`ship_app` / `merge_app` are the platform owner's, for a box that is a clone of the platform; a
+plain box refuses them. `add_forge_task` changes esoul ITSELF and is the platform owner's too —
+never the path to an app.
 
 ## The non-negotiables (each earned by a real failure — `app-anatomy.md`, `design-rules.md`)
 
@@ -194,8 +201,8 @@ walk away; when they are present the workbench is the honest choice.
 
 ## Honest reporting
 
-Never "shipped" without the PR URL, "merged" without the merge result, "installed" without the
-new app's node id, "works" without the drive that proved it. A red or `skipped` gate is
+Never "installing" without `install_app`'s answer, "live" without `install_app {status:true}`
+saying so, "installed" without the new app's node id, "works" without the drive that proved it. A red or `skipped` gate is
 reported with its name and detail. A preview that will not come up is quoted in the compiler's
 words. Say which `workspaceTools` grants, public doors, connections and file sources the app
 declares and why — the person reads them at install. When the app needs something the SDK

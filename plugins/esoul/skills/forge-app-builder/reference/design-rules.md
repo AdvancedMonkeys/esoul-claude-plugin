@@ -62,7 +62,7 @@ brief and purposeful; respect reduced-motion.
 - **Apps store knowledge.** `getStateDescription` is how agents perceive the app — write it as a
   compact, truthful brief with ids, never a dump, never a claim about what did not load.
 
-## Pre-ship checklist (run it yourself before `ship_app`)
+## Pre-install checklist (run it yourself before `install_app`)
 
 - [ ] Root fills the frame, flex column, `overflow:hidden`; chrome `flexShrink:0`; content
       `flex:1 minHeight:0` with its own scroll.

@@ -55,10 +55,10 @@ the only source, and it is only ever written by the platform.
   restore to an earlier checkpoint still renders.
 - `remove_app_asset {pluginId, name}` / `forge_remove_asset` drops the entry; the bytes stay.
 - Limits: 64 MB per asset, 256 MB per app. Storage is billed to the workspace owner.
-- `assets.json` is in the pull request. The reviewer sees names, sizes and hashes — the install
-  gate verifies every hash exists in the store before an app can be added, and an app installed
-  from its own GitHub repository may carry the real files under `assets/<name>`; the gate uploads
-  those (content-addressed) and refuses a file whose hash disagrees with the manifest.
+- `assets.json` travels with every saved version. The install gate verifies every hash exists in
+  the store before an app can be added; an app installed from a repository may carry the real files
+  under `assets/<name>`, and the gate uploads those (content-addressed) and refuses a file whose hash
+  disagrees with the manifest.
 
 ## What this is not
 

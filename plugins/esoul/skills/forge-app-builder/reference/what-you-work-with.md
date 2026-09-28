@@ -9,7 +9,7 @@ it does not have, or from believing a preview about something only an install ca
 |---|---|---|
 | **The hosted connection** (`esoul`, OAuth) | the person's whole account: every project, workspace, app | 15 general tools (below) |
 | **The Forge board** | an app on one workspace; opens a **box** per app being built | `get_app_tools(<board>)` → 28 `<verb>_<board>` tools via `call_app_tool` |
-| **The box** (workbench) | a cloud machine (4 vCPU, 8 GB) holding the platform's source at the board's base branch, your app on branch `forge-app/<board>__<id>`, running `next dev` for the preview | only through the board's tools; you have no shell except `run_in_app` |
+| **The box** (workbench) | a cloud machine (4 vCPU, 8 GB) that is a plain Node project: `esoul-sdk` and the app host from npm, your app at `src/plugins/<id>`, a local git of checkpoints, the preview served by the host — nothing of the platform, no token, no secret | only through the board's tools; you have no shell except `run_in_app` |
 
 The **fifteen hosted tools**: `list_workspaces`, `search_workspace`, `read_app_state`,
 `list_app_entries`, `read_app_entry`, `get_app_tools`, `call_app_tool`, `create_app`,
@@ -23,19 +23,19 @@ The **28 board tools**: `open_workbench`, `close_workbench`, `orient_app`, `list
 `read_app_file`, `search_app_files`, `read_platform_file`, `write_app_file`, `edit_app_file`,
 `delete_app_file`, `preview_app`, `look_at_app`, `drive_app`, `call_app_tool`, `read_app_state`,
 `test_app`, `check_app`, `run_in_app`, `app_problems`, `resolve_problem`, `commit_app`,
-`app_history`, `diff_app`, `restore_app`, `put_app_asset`, `remove_app_asset`, `ship_app`, `merge_app`, `build_app`, `add_forge_task`.
+`app_history`, `diff_app`, `restore_app`, `put_app_asset`, `remove_app_asset`, `install_app`, and the platform owner's `ship_app`, `merge_app`, `add_forge_task`.
 (The same handler serves the Python SDK's `esoul.forge` and the `esoul-mcp` server's `forge_*`
 tools for people on a Personal Access Token; the verbs and answers are the same.)
 
 ## 2. Who may do what
 
-- Only the **workspace owner** authors on a board (open, write, check, ship, resolve). An
+- Only the **workspace owner** authors on a board (open, write, check, install, resolve). An
   editing collaborator may wake an app already on the board and use its preview. Guests, read-only
   members, public viewers: nothing. You inherit the person you act for — if their chat is refused
   as not the owner, say so.
-- The board needs the owner's **GitHub connection** (Account settings → GitHub) to open a box. A
-  friend without access to the platform repo still gets a box: the platform's own installation
-  clones for the app arm.
+- Opening a box needs **nothing** from the person — no GitHub, no keys, no settings. The platform
+  keeps every checkpoint of the app in its own repository (the board's SAVED row: v12 · 2 min ago);
+  the person never sees a repository, a branch or a push.
 - The box holds the owner's **files grant** (24 h; workspace files + Google Drive of THAT
   workspace; renewed on `open_workbench` / `preview_app`) and nothing else — no PAT, no session.
   Other apps' tools and the person's computer are reached **through the board's open tab** (§4).
@@ -120,14 +120,13 @@ not). A `my_computer` command runs on their hardware and is **recorded on the wo
 timeline** — never put a secret in one. A public door (`access: "public"`) is listed on the
 install card by name; a public tool that spends credits needs a budget the person sets.
 
-## 8. The review boundary and what "installed" means
+## 8. Installing, and what "installed" means
 
-`ship_app` opens a pull request (label `user-app`); a person reads the diff; one release script
-runs the import wall, the sync, your tests and the type check, merges, deploys, **entitles the
-submitter** (the app is theirs alone until the owner makes it public) and tells the board
-"released — add it to a workspace". Alternatively the board's REPOSITORY row pushes the app to
-its own GitHub repo and the owner installs it by link in Settings → Apps (an `apps.lock.json`
-pin; update and uninstall are one-line edits; instances keep their timelines). Then
+`install_app` takes the app's last SAVED version, runs the platform's checks (the import wall over
+every file, the manifest, the tables it would add), hands the build the files, adds the app to the
+platform's build, deploys (about seven minutes), registers its tasks and **entitles the person** (the
+app is theirs alone). The board's Install button does the same from an install page (icon, name,
+description, every declared tool). No pull request, no review queue, no GitHub. Then
 `create_app(application_type="plugin_<id_with_underscores>", name="…")` puts an instance on a
 workspace: its tools are minted natively (`<verb>_<instance name>`), its tasks run on the
 platform's executor, its routes are mounted, its tables were created additively at install.

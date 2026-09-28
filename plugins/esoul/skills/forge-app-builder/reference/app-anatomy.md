@@ -21,7 +21,7 @@ package.json       only for an npm package the platform lacks (a visible line in
 | Field | Rule |
 |---|---|
 | `id` | lower-case, hyphens; equals the folder; **never changes** |
-| `applicationType` | `plugin_` + id with underscores; **never changes**; the schema must name it |
+| `applicationType` | `plugin_` + id with underscores; **never changes**; the schema must name it AS A LITERAL (`applicationType: "plugin_x"` in app.tsx — not behind an import; the registry gate and the install check read it by eye) |
 | `name`, `version`, `description` | what people see (≤ 80); semver bumped every submission; one honest paragraph (≤ 500) |
 | `entry`, `icon` | `app`; a lucide-react name (the tool lists the allowed set) |
 | `ops` | `{ "<name>": { "access"?: "write"\|"read"\|"public", "requires"?: "account" } }` — every op `server.ts` exports; default `write` |
@@ -78,7 +78,7 @@ export interface StickyNotesData extends ApplicationIdentifier {
 
 export const noteAddedEvent: EventDefinition<StickyNotesData> = {
   eventName: "plugin_sticky_notes_added",           // globally unique; prefix with your type
-  type: EventTypes.Client,                          // Client = UI and tools; Server = tasks/webhooks only
+  type: EventTypes.Client,                          // the one type an app declares (there is NO EventTypes.Server); a task's dispatchEvent and an op's ctx.emit write Client events too
   dataCreator: (args) => ({                         // MINTS ids and times. Called by the UI and by tools.
     eventName: "plugin_sticky_notes_added",
     eventData: { noteId: args.noteId ?? nanoid(), text: String(args.text ?? "").slice(0, 2000), color: args.color ?? "butter", x: args.x ?? 24, y: args.y ?? 76, at: args.at ?? Date.now() },
@@ -108,7 +108,7 @@ export const noteTextSetEvent: EventDefinition<StickyNotesData> = {
 } as EventDefinition<StickyNotesData>;
 
 export const pluginSchema: ApplicationSchema<StickyNotesData> = {
-  applicationType: "plugin_sticky_notes",
+  applicationType: "plugin_sticky_notes",           // the literal, as the manifest has it (never a constant from another file)
   description: "A wall of sticky notes on the workspace timeline.",
   reactNode: StickyNotesUi,
   reconstructStateFromEventLog: true,                // state IS the fold — replay, snapshots, durability
