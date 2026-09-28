@@ -137,7 +137,7 @@ align,size}` · `Quote{text,attribution}` · `Card{title,body,image,link}` · `S
 label}]}` · `Button{label,href,variant:primary|secondary|link,align,actions,visitorEnabled}` ·
 `Footer{text,links:[{label,href}]}` · `LinkList{title,items:[{label,sub,href,icon:clock|calendar|
 map|chat|info}]}` (big tappable rows — phone menus, links).
-Media: `Image{image,caption,width,rounded}` · `Gallery{images:[{url,alt}],columns:2|3|4}` ·
+Media: `Image{image,caption,width,rounded}` · `Gallery{images:[{url,alt,caption,detail}],columns:2|3|4,fit:square|portrait|natural}` (a portfolio: `fit:"natural"` keeps each work's shape, caption = title, detail = medium · size · price) ·
 `Svg{svg,width,maxHeight,align,color}` (an inline mark; one style per site) · `Embed{url:
 YouTube|Vimeo|google.com/maps?q=…}` · `Carousel{images,height:sm|md|lg|screen,scrollHint,
 showArrows,showDots,showCount}`.
