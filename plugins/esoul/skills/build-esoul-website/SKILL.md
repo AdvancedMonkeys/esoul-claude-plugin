@@ -32,7 +32,7 @@ from `get_app_tools` first, never guess the suffix. Below, `<site>` stands for t
 - **Discover**: `describe_profile`, `list_workspaces` (workspaces + their app ids/types),
   `read_app_state(workspace_id, app_id)`, `search_workspace`, `list_app_entries`, `read_app_entry`.
 - **Tools of an app**: `get_app_tools(workspace_id, app_id, names_only: true)` FIRST on any app
-  with more than ~10 tools (a site has 34; the full listing truncates in most clients and the
+  with more than ~10 tools (a site has 45; the full listing truncates in most clients and the
   second half — critique, screenshot, booking, connect_form, add_product — is the half you need),
   then `get_app_tools(…, tools: ["critique_page_X", "set_up_booking_X"])` for the exact schemas
   of the ones you will call. §7.0 quotes the six you always need.
@@ -122,7 +122,10 @@ reverts your last batch.
     it in `app_ids`.** `read_site_<site>`'s `Publication:` block tells you exactly this: not
     published / live since when / which hidden apps it reads (fine in site mode) / which apps
     were added after the publish and need a republish / whether visitors land on this site.
-11. **Verify like a visitor**: fetch the public URL with your browser or the cloud browser app,
+11. **Verify like a visitor**: `publish_homepage` answers with `visitor_view` — the mode, every page's address,
+    title and image count, and every block a visitor would find empty (an image not found, a Booking with no
+    free times or a calendar visitors cannot read). `check_live_site` answers the same at any time. Fix every
+    problem it names. Then fetch the public URL with your browser or the cloud browser app,
     check the phone layout, the menu/products count, a form submission or an order if the site
     takes them. A green tool result is not a verification; the public page is.
 
@@ -220,7 +223,7 @@ Data = ONE spreadsheet with a TAB per category. **`add_product_` refuses until t
 2. `set_sources_<site>` with one entry per category: `[{key:"predkrmy", appType:"spreadsheet",
    instanceName:"Menu", view:"products", path:"Předkrmy"}, …]` (`path` = the tab title, exactly).
 3. Tabs: `add_sheet_Menu {name:"Předkrmy"}` per category (rename the default first tab with
-   `rename_sheet_`), then ONE `insert_markdown_table_Menu {sheetId, markdown}` per tab with the
+   `rename_sheet_Menu {sheetId, name}`), then ONE `insert_markdown_table_Menu {sheetId, markdown}` per tab with the
    header row `Název | Popis | Cena | Obrázek | Dostupné | Alergeny | Volby | Štítky | Pořadí`
    and the dishes as rows — three calls per category instead of one per dish. English headers
    work too (name, description, price, image, available, allergens, options, tags, order).
@@ -422,7 +425,7 @@ a rate limit, or Chromium down), the tool reply carries this manual checklist �
 | A page you built after publishing is empty for visitors | the block reads an app created after the publish (a calendar, a second sheet) that is not public | `publish_homepage` again with it in `app_ids`; `read_site_` → `Publication:` names it |
 | `upload_file` refuses "sha256 mismatch" | model-emitted base64 drifted (anything over ~20 KB) | `source_url`, an SVG authored as text, or the owner uploads in the UI |
 | `critique_page_` "positive credit balance required" | the OWNER's AI credit is empty | tell the owner; use the manual checklist (§8) meanwhile |
-| `get_app_tools` result is cut off | 34 schemas exceed the client's result size | `names_only: true`, then `tools: [names]` |
+| `get_app_tools` result is cut off | 45 schemas exceed the client's result size | `names_only: true`, then `tools: [names]` |
 | A tool result says ok but the page did not change | you edited the wrong page (`page` defaults to the SELECTED page) | pass `page` explicitly (id or slug) |
 | `create_app` "returned" an existing app | (type, name) already exists — creation is idempotent on the name | pick a distinct name |
 | Booking page shows no slots | the calendar has no availability windows | the owner sets availability in the calendar app; not a page bug |
