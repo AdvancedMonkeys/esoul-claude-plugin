@@ -22,11 +22,11 @@ PALETTE
 MEANING-CODE film-wide and never reuse: BLU=flow/input, YEL=hero/highlight, RED=cost/warning, GRN=success/done. A frame carries ONE or TWO accents; everything else is TXT/GREY/BOX. Three accents in a frame reads as noise — recolor toward the frame's one claim.
 
 TYPE SCALE — the proportions ARE the style
-Font: JetBrains Mono (sandbox: sudo apt-get install -y fonts-jetbrains-mono && fc-cache -f; fallback "DejaVu Sans Mono" ships everywhere). The signature is mono + CAPS + LETTERSPACING:
+Font: JetBrains Mono (sandbox: sudo apt-get install -y fonts-jetbrains-mono && fc-cache -f; fallback "DejaVu Sans Mono" ships everywhere). Name it "JetBrains Mono NL" in code: the plain family has LIGATURES, so `<<<`, `->`, `!=` become one glyph each — code on screen changes shape and `text[6:10]` indexes the wrong characters (a CUDA film coloured "96,25" instead of "4096", 2026-09-28). The signature is mono + CAPS + LETTERSPACING:
   def label(s, size=28, color=TXT, ls=7000):
       return MarkupText(f'<span letter_spacing="{ls}">{s.upper()}</span>',
                         font=MONO, font_size=size, color=color)
-(Pango letter_spacing is 1024ths of a pt; ~7000 at size 28 ≈ the reference look. Titles ls=9000.)
+(Pango letter_spacing is 1024ths of a pt. Measured on a 720p film, 2026-09-28: 2000–2500 at sizes 18–28 reads designed; 6000+ reads as letters drifting apart and pushes labels off frame. Titles ~3000.)
 The RATIOS, film-wide — break one and the frame stops looking designed:
   HERO number 150 bold (one per beat, MAX)  ·  headline 46 caps YEL/TXT  ·  label 26-28 letterspaced
   body 30 mono sentence-case GREY with the keyword tinted (t2c={"sofic": YEL})

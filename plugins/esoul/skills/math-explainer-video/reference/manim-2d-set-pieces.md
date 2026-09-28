@@ -108,7 +108,7 @@ FRAME DISCIPLINE — the camera is 14.2 × 8.0 units and it CROPS, it never shri
         from itertools import combinations
         lum = lambda c: sum(w*x for w, x in zip((.299, .587, .114), ManimColor(c).to_rgb()))
         fam = [m for r in scene.mobjects for m in r.get_family() if m not in ignore]
-        txt = [m for m in fam if isinstance(m, (Text, MathTex, Tex))]
+        txt = [m for m in fam if isinstance(m, (Text, MarkupText, MathTex, Tex))]
         txt = [m for m in txt if not any(m is not o and m in o.get_family() for o in txt)]
         box = [m for m in fam if isinstance(m, (Rectangle, Circle, Ellipse, Polygon)) and m.width*m.height > min_area]
         B = lambda m: (m.get_left()[0], m.get_right()[0], m.get_bottom()[1], m.get_top()[1])
@@ -125,7 +125,9 @@ FRAME DISCIPLINE — the camera is 14.2 × 8.0 units and it CROPS, it never shri
             if not zoomed and (max(abs(l), abs(r)) > xlim or max(abs(b), abs(t)) > ylim):
                 raise AssertionError(f"OFF-FRAME: {m}")
         for m in txt:
-            if abs(lum(m.get_color()) - lum(bg)) < min_c:
+            # Pango text reports its OWN colour as black: read the glyphs' fills, brightest wins
+            peak = max((lum(g.get_fill_color()) for g in m.family_members_with_points() if g.get_fill_opacity() > 0.2), default=1.0)
+            if abs(peak - lum(bg)) < min_c:
                 raise AssertionError(f"LOW CONTRAST: {m} — recolor to TXT")
             for s in box:
                 if part(m, s): raise AssertionError(f"TEXT CROSSES EDGE: {m} straddles {s}")
