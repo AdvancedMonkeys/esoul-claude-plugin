@@ -1,0 +1,138 @@
+---
+name: agent-builder
+description: Build, run and operate multi-agent networks in the person's ExternalSoul workspace over MCP — agents with instructions and models, the workspace's apps as their tools, web search, hand-offs between agents, a trigger that runs the network on every new email / calendar event / todo / Telegram message, fan-out over a spreadsheet, questions to the person, and stopping it. Use whenever someone asks for "an agent that…", wants work to happen automatically when something arrives, wants to automate a workflow across their apps, or asks what their agents are doing, why one failed, or to stop one.
+---
+
+# Agent networks in ExternalSoul
+
+An **agent network** is an app in a workspace (type `agent_builder`). It holds a graph: **agents**
+(a model with instructions) connected to **tools** (the workspace's own apps, workspace tools, web
+search) and to each other by **hand-offs**; optionally a **trigger** that runs it whenever an event
+happens in the workspace. A run executes in the background; every step lands on the workspace
+timeline, and the person sees it live in the app (Build / Runs tabs). Agents use the same tools the
+person does, so whatever an agent writes is an ordinary change to the person's apps.
+
+Everything below goes through the app's own tools: `get_app_tools` lists them, `call_app_tool`
+calls one. Their names end with the app's name — spaces become underscores (`set_agent_network_Mail_Triage`
+for an app called "Mail Triage"). Take exact names from `get_app_tools`; never guess.
+
+| Tool (suffix `_<App>`) | Does |
+|---|---|
+| `agent_builder_catalogue_` | What can be built: node kinds, models, workspace tool names, trigger events with their `{{variables}}`, this workspace's apps |
+| `set_agent_network_` | Build or replace the whole network from a **spec** (below). Validated; nothing is written if anything is wrong, and every problem is listed |
+| `describe_agent_network_` | The network as a spec + whether it is listening / has runs open + problems that would stop it |
+| `run_agent_network_` | Run once with a task (`input`). Returns at once; the run works in the background |
+| `start_agent_network_` | Start listening for the trigger: every matching event runs the network |
+| `stop_agent_network_` | Stop: trigger off, every run the network started cancelled, their questions closed |
+| `list_agent_runs_` / `read_agent_run_` | Recent runs; one run's status, result or error, pending question, last steps |
+| `answer_agent_question_` | Answer the question a run is waiting on; the run resumes |
+
+## The loop
+
+1. **Find or make the app.** `list_workspaces` → the workspace. An existing network: find the
+   `agent_builder` app there. A new one: `create_app` with `application_type: "agent_builder"` and
+   a name that says what it does ("Mail Triage", "Lead Researcher"). Then `get_app_tools`.
+2. **Read the catalogue** (`agent_builder_catalogue_`) — the exact app names, event names and
+   variables, workspace tool names and models you may use.
+3. **Write the spec** and `set_agent_network_`. If it answers "Not saved", fix every listed problem
+   and send the whole spec again. Full field reference: `reference/spec.md`. Complete worked
+   networks: the `agent-recipes` skill.
+4. **Check it**: `describe_agent_network_` → `problems` must be empty.
+5. **Try it once** with `run_agent_network_` and a realistic `input` — even for a triggered
+   network (the input stands in for the trigger's prompt). Follow it with `list_agent_runs_` →
+   `read_agent_run_` until the status is terminal (`ok`, `error`, `canceled`, `timeout`).
+   Read the steps: did each agent call the tools you expected, did the hand-off happen, is the
+   result right? Adjust the spec (instructions are the usual fix) and try again.
+6. **Start it** (`start_agent_network_`) only when the person wants it to act on its own.
+7. **Report** what it will do, on what, with which model, and how to stop it.
+
+`set_agent_network_` refuses while the network is listening or has runs open — `stop_agent_network_`
+first, change, then start again (the editor locks the graph the same way).
+
+## The spec in one screen
+
+```json
+{
+  "name": "Mail Triage",
+  "default_model": "anthropic/claude-haiku-4.5",
+  "max_iter": 8,
+  "nodes": [
+    { "id": "new-mail", "type": "trigger", "event": "gmail_synced", "source_app": "Gmail",
+      "run_mode": "per_item",
+      "prompt": "New email from {{email.from}}\nSubject: {{email.subject}}\n\n{{email.snippet}}" },
+    { "id": "sorter", "type": "agent", "name": "Sorter",
+      "instructions": "Log every email in the Mail Log sheet (sender, subject, verdict). If it needs neither a reply nor a meeting, finish with the verdict." },
+    { "id": "replier", "type": "agent", "name": "Replier", "model": "anthropic/claude-sonnet-4.6",
+      "instructions": "Draft a reply in the person's voice. Ask the person before sending anything that commits them." },
+    { "id": "scheduler", "type": "agent", "name": "Scheduler",
+      "instructions": "Find a free slot in the Calendar and propose it in a reply draft." },
+    { "id": "log", "type": "app_tools", "app": "Mail Log" },
+    { "id": "cal", "type": "app_tools", "app": "Calendar" },
+    { "id": "mail", "type": "app_tools", "app": "Gmail" },
+    { "id": "ask", "type": "workspace_tools", "tools": ["ask_user"] }
+  ],
+  "edges": [
+    { "from": "new-mail", "to": "sorter" },
+    { "from": "sorter", "to": "replier", "when": "the email needs a written reply" },
+    { "from": "sorter", "to": "scheduler", "when": "the email asks to meet" },
+    { "from": "scheduler", "to": "cal" },
+    { "from": "scheduler", "to": "mail" },
+    { "from": "sorter", "to": "log" },
+    { "from": "replier", "to": "mail" },
+    { "from": "replier", "to": "ask" }
+  ]
+}
+```
+
+- **The first agent in `nodes` is where every run starts.**
+- **agent → agent** = a hand-off, with a `when` rule (required). What happens after an agent
+  finishes depends on how many hand-offs leave it:
+  - **none** — the run ends;
+  - **exactly one** — it is ALWAYS taken, without asking the router: agents in a line run as a
+    pipeline, one after the other, whatever `when` says;
+  - **two or more** — the router reads their `when` rules and picks one, or ends the run when none
+    fits. This is how a network makes a decision.
+
+  So a conditional step ("hand off only if a reply is needed") needs a second hand-off (another
+  specialist) or must live inside the agent's own instructions ("if no reply is needed, log it and
+  finish").
+- **agent → tool node** = that agent can use those tools. Tools are per agent — connect each
+  agent to what it needs, nothing more.
+- **trigger → first agent.** The trigger's `prompt` (with `{{variables}}`) is the run's input.
+- Apps are named by their name as `list_workspaces` / the catalogue shows them (or their id).
+
+## Choosing well
+
+- **Few agents, one job each.** One agent that sorts and one that writes beats five that chat.
+  Every hand-off is a model call and a chance to misroute; `max_iter` caps hand-offs per run.
+- **Instructions are the program.** Say what to read, what to write where, when to stop, and when to
+  hand off. Name the apps by name. Ask for short final answers — the last agent's final message is
+  the run's result.
+- **Cheap models for sorting and routing** (`anthropic/claude-haiku-4.5`, `deepseek/deepseek-v4-flash`),
+  strong models where quality shows (`anthropic/claude-sonnet-4.6` and up). Set the cheap one as
+  `default_model`, override per agent.
+- **Triggers cost per event.** `run_mode: "per_item"` runs once per item of a batch (one run per
+  email, not one per sync). Use `filter` to skip noise before any model runs (see `reference/spec.md`).
+- **Questions park runs.** An agent with `ask_user` waits — for days if nobody answers — and each
+  waiting run counts as open. Tell the agent exactly when to ask; for routine cases tell it to decide.
+- **Runs spend the person's credits.** Test with one run before starting a trigger on a busy inbox.
+
+## Operating
+
+- "What is it doing?" → `describe_agent_network_` (status line) then `list_agent_runs_`.
+- "Why did it fail?" → `read_agent_run_` → `error` and the last steps. Common causes:
+  `Out of credits`; `Stopped at the iteration cap` (raise `max_iter` or tighten `when` rules);
+  a tool the agent needed was not connected; a source app was removed (`describe_…` lists it).
+- A run waiting on the person → `read_agent_run_` shows `pending_question`; answer with
+  `answer_agent_question_` only with the person's words or explicit permission.
+- "Stop it" → `stop_agent_network_`. It reports runs cancelled, whether the trigger was on, and
+  questions closed. Nothing new starts until `start_agent_network_`.
+- Undo: in the app's Runs tab a finished run can be **reverted** (its changes to the workspace are
+  rolled back) — unless it changed something outside the workspace (sent mail, a calendar event on
+  Google, a Gmail label), which cannot be taken back. That is a person's action in the app.
+
+## Never
+
+- Never start a trigger the person did not ask for, or on an inbox/calendar without saying which.
+- Never answer a run's question with your own guess about the person's wishes.
+- Never claim an agent did something without reading the run (`read_agent_run_`).

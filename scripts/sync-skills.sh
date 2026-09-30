@@ -43,4 +43,15 @@ HOSTED_TOOLS="list_workspaces create_app get_app_tools call_app_tool upload_file
 GPHANTOM=$(comm -13 <(echo "$GREAL") <(echo "$GUSED" | grep -vxF -f <(tr ' ' '\n' <<<"$HOSTED_TOOLS")))
 if [ -n "$GPHANTOM" ]; then echo "email-campaign names tools the Gmail app does not have: $GPHANTOM" >&2; exit 1; fi
 echo "email-campaign: every Gmail tool it names is real"
+# agent-builder + agent-recipes are written HERE; every `<verb>_<App>` toolkit tool they name must be
+# one the agent_builder app mints (its toolkitCreator), and they must name every one of them.
+AB="$KINETIC/src/application-interfaces/agent-builder/app.tsx"
+AREAL=$(grep -oE '\[`[a-z_]+_\$\{base\}`\]' "$AB" | grep -oE '[a-z_]+_\$' | sed 's/_\$$//' | grep -v '^add_agent_to_network$' | sort -u)
+AUSED=$(cat "$DST"/agent-builder/SKILL.md "$DST"/agent-builder/reference/*.md "$DST"/agent-recipes/SKILL.md \
+  | grep -oE '`[a-z_]+_(<App>)?`' | tr -d '`' | sed 's/<App>$//' | grep -E '_$' | sed 's/_$//' | sort -u)
+APHANTOM=$(comm -13 <(echo "$AREAL") <(echo "$AUSED"))
+AMISSING=$(comm -23 <(echo "$AREAL") <(echo "$AUSED"))
+if [ -n "$APHANTOM" ]; then echo "agent-builder skills name tools the app does not have: $APHANTOM" >&2; exit 1; fi
+if [ -n "$AMISSING" ]; then echo "agent-builder skills never mention real tools: $AMISSING" >&2; exit 1; fi
+echo "agent-builder: $(echo "$AREAL" | wc -l) toolkit tools, all real, all documented"
 echo "ok"
