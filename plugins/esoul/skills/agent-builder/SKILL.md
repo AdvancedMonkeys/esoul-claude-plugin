@@ -1,6 +1,6 @@
 ---
 name: agent-builder
-description: Build, run and operate multi-agent networks in the person's ExternalSoul workspace over MCP — agents with instructions and models, the workspace's apps as their tools, web search, hand-offs between agents, a trigger that runs the network on every new email / calendar event / todo / Telegram message, fan-out over a spreadsheet, questions to the person, and stopping it. Use whenever someone asks for "an agent that…", wants work to happen automatically when something arrives, wants to automate a workflow across their apps, or asks what their agents are doing, why one failed, or to stop one.
+description: Build, run and operate multi-agent networks in the person's ExternalSoul workspace over MCP — agents with instructions and models, the workspace's apps as their tools, web search, hand-offs between agents, a trigger that runs the network on every new email / calendar event / todo / Telegram message, fan-out over a spreadsheet, questions to the person, changing a network while it is live (no stop needed), and stopping it. Use whenever someone asks for "an agent that…", wants work to happen automatically when something arrives, wants to automate a workflow across their apps, or asks what their agents are doing, why one failed, or to stop one. Also use when someone wants to change how an agent works, fix what it got wrong, or improve instructions of a network that is already running.
 ---
 
 # Agent networks in ExternalSoul
@@ -21,7 +21,7 @@ never breaks them. Take exact names from `get_app_tools`; never guess.
 | Tool (suffix `_<App>`) | Does |
 |---|---|
 | `agent_builder_catalogue_` | What can be built: node kinds, models, workspace tool names, trigger events with their `{{variables}}`, this workspace's apps |
-| `set_agent_network_` | Build or replace the whole network from a **spec** (below). Validated; nothing is written if anything is wrong, and every problem is listed |
+| `set_agent_network_` | Build or replace the whole network from a **spec** (below). Validated; nothing is written if anything is wrong, and every problem is listed. **Works while the network listens or runs** — no Stop |
 | `describe_agent_network_` | The network as a spec + whether it is listening / has runs open + problems that would stop it |
 | `run_agent_network_` | Run once with a task (`input`). Returns at once; the run works in the background |
 | `start_agent_network_` | Start listening for the trigger: every matching event runs the network |
@@ -61,6 +61,8 @@ never breaks them. Take exact names from `get_app_tools`; never guess.
    trigger fires only on events AFTER the start. To see it fire on mail, send the inbox an email
    from Gmail itself (another address, or the same account from gmail.com) — NOT with the Gmail
    app's `send_email_`: what the app sends it records as sent, and that never counts as new mail.
+   A started network stays editable: change it with `set_agent_network_` while it listens — the
+   trigger stays armed and the next event uses the new version.
 8. **Report** what it will do, on what, with which model, what a run cost (a sorter on Haiku plus
    one specialist on DeepSeek flash is about $0.004 an email), and how to stop it.
 
@@ -154,6 +156,12 @@ instructions, save, then `run_agent_network_` on that same email to see the fix 
 - **Runs spend the person's credits.** Test with one run before starting a trigger on a busy inbox.
 
 ## Operating
+
+- "Change it" / "it got this wrong" → **edit it live, never Stop first.** `describe_agent_network_`,
+  change the one agent's instructions (or the trigger's prompt, filter, source), send the whole spec
+  back with `set_agent_network_`. The trigger stays armed and the next event uses the new version;
+  runs already going finish on theirs. Then `run_agent_network_` on the email that went wrong, and
+  `read_agent_run_` to see the fix work. Stopping only to edit loses events that arrive meanwhile.
 
 - "What is it doing?" → `describe_agent_network_` (status line) then `list_agent_runs_`.
 - "Why did it fail?" → `read_agent_run_` → `error` and the last steps. Common causes:

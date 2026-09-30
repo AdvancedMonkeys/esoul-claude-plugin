@@ -1,7 +1,9 @@
 # The network spec — full reference
 
 `set_agent_network_<App>({ spec })` takes this object. `describe_agent_network_<App>` returns the
-same shape for an existing network, so read, edit and send it back to change one thing.
+same shape for an existing network, so read, edit and send it back to change one thing — also while
+the network is listening or has runs open: it keeps listening and uses the new version from the next
+event (runs already going finish on theirs). A spec without a trigger stops it listening.
 
 ```json
 {
