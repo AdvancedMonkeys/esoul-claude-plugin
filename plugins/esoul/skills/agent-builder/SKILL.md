@@ -64,8 +64,11 @@ never breaks them. Take exact names from `get_app_tools`; never guess.
 8. **Report** what it will do, on what, with which model, what a run cost (a sorter on Haiku plus
    one specialist on DeepSeek flash is about $0.004 an email), and how to stop it.
 
-`set_agent_network_` refuses while the network is listening or has runs open — `stop_agent_network_`
-first, change, then start again (the editor locks the graph the same way).
+**Edit it live.** `set_agent_network_` works while the network listens or runs — no Stop needed.
+A listening network keeps listening and uses the new version from the next event; a run already
+going finishes on the version it started with (the answer says how many). A new spec without a
+trigger stops listening. To fix a network that got an email wrong: read the run, change the
+instructions, save, then `run_agent_network_` on that same email to see the fix work.
 
 ## The spec in one screen
 
@@ -134,6 +137,11 @@ first, change, then start again (the editor locks the graph the same way).
   verdict is decided gets a row without the verdict. Order the steps, and give the exact column
   names: `cells {"From", "Subject", "Verdict"}`. Downstream agents update that row by its id
   (`update_cell_<Sheet>` with `rowId` and `column`).
+- **A reply is judged with its thread.** Tell the deciding agent to read the thread when the email is
+  a reply ("Re:", or it refers to an earlier message), and to judge by what the NEW email says — the
+  sender may be the owner writing to themself, which is still a request (the Gmail app labels such a
+  message "your own"). Give every kind of request somewhere to go: a meeting agent that only books
+  leaves "cancel" and "move" with no one to act on them.
 - **Drafts, not sends, until the person says otherwise.** `create_email_draft_Gmail` on the same
   thread leaves the letter one press from sent; `send_email_Gmail` sends to real people at once.
 - **Cheap models for sorting and routing** (`anthropic/claude-haiku-4.5`, `deepseek/deepseek-v4-flash`),
