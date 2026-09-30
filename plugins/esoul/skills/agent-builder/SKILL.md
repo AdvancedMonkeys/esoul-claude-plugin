@@ -14,7 +14,9 @@ person does, so whatever an agent writes is an ordinary change to the person's a
 
 Everything below goes through the app's own tools: `get_app_tools` lists them, `call_app_tool`
 calls one. Their names end with the app's name — spaces become underscores (`set_agent_network_Mail_Triage`
-for an app called "Mail Triage"). Take exact names from `get_app_tools`; never guess.
+for an app called "Mail Triage"). A few older apps (calendar, contacts, the old `email_viewer` inbox)
+end theirs with the last six characters of the app's id instead (`add_event_hh9e0M`), so a rename
+never breaks them. Take exact names from `get_app_tools`; never guess.
 
 | Tool (suffix `_<App>`) | Does |
 |---|---|
@@ -34,17 +36,32 @@ for an app called "Mail Triage"). Take exact names from `get_app_tools`; never g
    a name that says what it does ("Mail Triage", "Lead Researcher"). Then `get_app_tools`.
 2. **Read the catalogue** (`agent_builder_catalogue_`) — the exact app names, event names and
    variables, workspace tool names and models you may use.
-3. **Write the spec** and `set_agent_network_`. If it answers "Not saved", fix every listed problem
+3. **Make the apps the agents will use, first.** An agent writes into apps that exist; the spec
+   only names them. `create_app` takes the application TYPE as the catalogue's `apps` show it
+   (`spreadsheet`, `todo_app`, `calendar`, `block_note_editor`, `plugin_gmail`, `telegram_messenger`…).
+   Mail is `plugin_gmail` (the Gmail app; trigger `gmail_synced`) — `email_viewer` is the older
+   inbox, kept working but not the one to build on.
+   Shape them for the job: a new spreadsheet starts with placeholder columns A, B, C — add the
+   columns the instructions name (`add_column_<Sheet>`, a `status` type with `options` for a fixed
+   set of values) and delete the placeholders. A mail or Telegram app does nothing until its account
+   is connected: the person assigns the Google account (or connects the bot) once, in the app —
+   say so and wait before starting a trigger on it.
+4. **Write the spec** and `set_agent_network_`. If it answers "Not saved", fix every listed problem
    and send the whole spec again. Full field reference: `reference/spec.md`. Complete worked
    networks: the `agent-recipes` skill.
-4. **Check it**: `describe_agent_network_` → `problems` must be empty.
-5. **Try it once** with `run_agent_network_` and a realistic `input` — even for a triggered
-   network (the input stands in for the trigger's prompt). Follow it with `list_agent_runs_` →
+5. **Check it**: `describe_agent_network_` → `problems` must be empty.
+6. **Try it once** with `run_agent_network_` and a realistic `input` — even for a triggered
+   network (the input stands in for the trigger's prompt, so write it in the prompt's shape). Use
+   a REAL item: take a thread id / row id / event from the app (`list_inbox_Gmail`, `read_sheet_…`),
+   because an agent told to reply on thread "test-1" fails at the tool. Follow it with `list_agent_runs_` →
    `read_agent_run_` until the status is terminal (`ok`, `error`, `canceled`, `timeout`).
    Read the steps: did each agent call the tools you expected, did the hand-off happen, is the
    result right? Adjust the spec (instructions are the usual fix) and try again.
-6. **Start it** (`start_agent_network_`) only when the person wants it to act on its own.
-7. **Report** what it will do, on what, with which model, and how to stop it.
+7. **Start it** (`start_agent_network_`) only when the person wants it to act on its own. A
+   trigger fires only on events AFTER the start. To see it fire on mail, the mail must come from
+   ANOTHER address: what the account sends itself is already in the app and is never new mail.
+8. **Report** what it will do, on what, with which model, what a run cost (a sorter on Haiku plus
+   one specialist on DeepSeek flash is about $0.004 an email), and how to stop it.
 
 `set_agent_network_` refuses while the network is listening or has runs open — `stop_agent_network_`
 first, change, then start again (the editor locks the graph the same way).
@@ -59,9 +76,9 @@ first, change, then start again (the editor locks the graph the same way).
   "nodes": [
     { "id": "new-mail", "type": "trigger", "event": "gmail_synced", "source_app": "Gmail",
       "run_mode": "per_item",
-      "prompt": "New email from {{email.from}}\nSubject: {{email.subject}}\n\n{{email.snippet}}" },
+      "prompt": "New email.\nFrom: {{email.from}}\nSubject: {{email.subject}}\nThread id: {{email.threadId}}\n\n{{email.body}}" },
     { "id": "sorter", "type": "agent", "name": "Sorter",
-      "instructions": "Log every email in the Mail Log sheet (sender, subject, verdict). If it needs neither a reply nor a meeting, finish with the verdict." },
+      "instructions": "1. Decide the verdict, one word: reply, meeting or info. 2. Log it with add_row_Mail_Log, cells {\"From\", \"Subject\", \"Verdict\"} — all three, every time. 3. Finish with: Verdict, Row id (from add_row), From, Subject, Thread id, what they want. For info, finish with Done." },
     { "id": "replier", "type": "agent", "name": "Replier", "model": "anthropic/claude-sonnet-4.6",
       "instructions": "Draft a reply in the person's voice. Ask the person before sending anything that commits them." },
     { "id": "scheduler", "type": "agent", "name": "Scheduler",
@@ -108,6 +125,16 @@ first, change, then start again (the editor locks the graph the same way).
 - **Instructions are the program.** Say what to read, what to write where, when to stop, and when to
   hand off. Name the apps by name. Ask for short final answers — the last agent's final message is
   the run's result.
+- **A hand-off carries only the previous agent's final message.** So the agent that decides must
+  END with everything the next one needs, ids included — the row it wrote, the thread id, the
+  message id — in a fixed shape ("Verdict: … / Row id: … / Thread id: …"). Put the ids in the
+  trigger's prompt too (`{{email.threadId}}`, `{{email.id}}`), or nobody downstream can act on the thread.
+- **Decide, then write, and name every cell.** "Add a row with sender, subject, verdict" before the
+  verdict is decided gets a row without the verdict. Order the steps, and give the exact column
+  names: `cells {"From", "Subject", "Verdict"}`. Downstream agents update that row by its id
+  (`update_cell_<Sheet>` with `rowId` and `column`).
+- **Drafts, not sends, until the person says otherwise.** `create_email_draft_Gmail` on the same
+  thread leaves the letter one press from sent; `send_email_Gmail` sends to real people at once.
 - **Cheap models for sorting and routing** (`anthropic/claude-haiku-4.5`, `deepseek/deepseek-v4-flash`),
   strong models where quality shows (`anthropic/claude-sonnet-4.6` and up). Set the cheap one as
   `default_model`, override per agent.

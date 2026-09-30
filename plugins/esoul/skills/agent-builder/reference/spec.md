@@ -36,8 +36,11 @@ one produced.
 ### `app_tools`
 All the tools of ONE app in this workspace (a spreadsheet, notes, calendar, contacts, Gmail,
 slideshow, site, todo…). `app`: the app's name or id (from the catalogue's `apps`). The agent sees
-them as `<verb>_<AppName>` — the same tools `get_app_tools` shows you for that app. Tools are bound
-by the app's identity: renaming the app later keeps the binding.
+them as `<verb>_<AppName>` — the same tools `get_app_tools` shows you for that app (calendar,
+contacts and the old `email_viewer` inbox use the last six characters of the app's id instead of
+its name: `add_event_hh9e0M`). Tools are bound by the app's identity: renaming the app later keeps
+the binding. In instructions, name the tool the way `get_app_tools` spells it, or name the verb and
+the app ("add the meeting to the Calendar") — never a spelling you have not seen.
 
 ### `workspace_tools`
 Named tools that are not one app's: `tools: [names]` from the catalogue's `workspace_tools`, e.g.
@@ -102,7 +105,7 @@ Common events (always confirm names in the catalogue — they differ by app):
 | App | Event | Batch | Variables |
 |---|---|---|---|
 | Gmail (`plugin_gmail`) | `gmail_synced` — new email | yes, item `email` | `{{email.from}}`, `{{email.fromEmail}}`, `{{email.subject}}`, `{{email.snippet}}`, `{{email.body}}`, `{{email.threadId}}`, `{{email.id}}`, `{{email.labelIds}}`, `{{email.attachments[0].filename}}` |
-| Inbox (`email_viewer`, older mail app) | `email_messages_synced` — new email | yes, item `email` | as above |
+| Inbox (`email_viewer`, the older mail app — build on Gmail) | `email_messages_synced` — new email | yes, item `email` | as above |
 | Telegram | `telegram_messages_synced` — new message | yes, item `message` | `{{message.text}}`, `{{message.chatId}}`, `{{message.chat.title}}`, `{{message.from.name}}`, `{{message.from.username}}` |
 | Calendar | `calendar_create_event` — event created | | `{{event.title}}`, `{{event.startTime}}`, `{{event.endTime}}`, `{{event.location}}`, `{{event.description}}` |
 | Calendar | `calendar_external_events_synced` — Google event synced | yes, item `event` | as above |
@@ -123,7 +126,9 @@ take a comma list, or an array field:
 {{email.fromEmail}} not in noreply@x.com, alerts@y.com
 ```
 
-A trigger only fires on events AFTER it was started; mail the person sends is not treated as new mail.
+A trigger only fires on events AFTER it was started. Mail the account sends — including to itself —
+is not new mail (the app already holds it), and neither are drafts, spam, bounces or auto-replies: to
+see a mail trigger fire, send from another address.
 
 ## Edges
 

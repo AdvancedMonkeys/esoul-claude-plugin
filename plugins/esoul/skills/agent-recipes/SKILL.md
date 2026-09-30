@@ -22,53 +22,57 @@ when unsure, how to finish.
 
 ## 1. Inbox triage — several agents, each with its own tools, on every new email
 
-A sorter logs every email and decides; specialists act. Two hand-offs leave the sorter, so the
-router chooses (or ends the run when neither fits).
+A sorter logs every email and decides; specialists act. Three hand-offs leave the sorter, so the
+router chooses (or ends the run when none fits — info and promo stop at the log). This exact
+network ran live on a real Gmail inbox (the docs' Mail Desk): about $0.004 an email.
 
 Apps: Gmail (`plugin_gmail`, named "Gmail" here), a spreadsheet "Mail Log" with columns
-From, Subject, Verdict, Action; Calendar; Todo.
+From (email), Subject, Verdict (status: reply, meeting, task, info, promo), Action; Calendar; Todo.
 
 ```json
 {
-  "name": "Mail Triage",
-  "default_model": "anthropic/claude-haiku-4.5",
+  "name": "Mail Desk",
+  "default_model": "deepseek/deepseek-v4-flash",
   "max_iter": 6,
   "nodes": [
     { "id": "new-mail", "type": "trigger", "event": "gmail_synced", "source_app": "Gmail",
       "run_mode": "per_item",
-      "prompt": "New email.\nFrom: {{email.from}}\nSubject: {{email.subject}}\nThread: {{email.threadId}}\n\n{{email.snippet}}" },
-    { "id": "sorter", "type": "agent", "name": "Sorter",
-      "description": "Reads and logs every email, decides what it needs.",
-      "instructions": "Add one row to the Mail Log sheet: From, Subject, Verdict (one of: reply, meeting, task, info, promo). Then finish with the verdict and one line of reason. Do nothing else." },
-    { "id": "replier", "type": "agent", "name": "Replier", "model": "anthropic/claude-sonnet-4.6",
-      "description": "Writes replies.",
-      "instructions": "Read the thread in Gmail, then create a reply DRAFT in the person's voice — short, specific, no promises of money or dates. Update the email's Mail Log row: Action = 'draft written'. Finish with the draft's first line." },
+      "prompt": "New email.\nFrom: {{email.from}}\nSubject: {{email.subject}}\nThread id: {{email.threadId}}\nMessage id: {{email.id}}\n\n{{email.body}}" },
+    { "id": "sorter", "type": "agent", "name": "Sorter", "model": "anthropic/claude-haiku-4.5",
+      "description": "Reads each new email, logs it, and decides whose work it is.",
+      "instructions": "You sort one new email.\n1. Decide the verdict, one word: reply (a person asks something you can answer in writing), meeting (they want to meet or call at a time), task (they ask for something to be done later), info (nothing to do), promo (newsletters, marketing, automated mail).\n2. Log it with add_row_Mail_Log, cells {\"From\": sender address, \"Subject\": subject, \"Verdict\": the verdict word}. All three cells, every time.\n3. Finish with a short message in this shape, so the next agent has everything:\nVerdict: <verdict>\nRow id: <the rowId add_row returned>\nFrom: <sender>\nSubject: <subject>\nThread id: <thread id>\nMessage id: <message id>\nWhat they want: <one or two sentences>\nFor info and promo, end with Done: nobody else needs to act." },
+    { "id": "replier", "type": "agent", "name": "Replier",
+      "description": "Drafts a reply in Gmail for mail that asks a question.",
+      "instructions": "You draft the reply to one email. Read the thread with read_thread_Gmail if you need more than the summary. Write a short, warm, specific answer and save it with create_email_draft_Gmail as a reply on the same thread (never send). Then set the Action cell of the Mail Log row (the Row id you were given) with update_cell_Mail_Log to 'Reply drafted'. Finish with one line saying what you drafted." },
     { "id": "scheduler", "type": "agent", "name": "Scheduler",
-      "description": "Handles requests to meet.",
-      "instructions": "Find two free 30-minute slots in the next five working days in the Calendar. Draft a reply in Gmail proposing them. Update the Mail Log row: Action = 'slots proposed'." },
+      "description": "Puts a proposed meeting on the calendar and drafts the confirmation.",
+      "instructions": "You handle a request to meet. Read the thread with read_thread_Gmail for the proposed day and time. Add the meeting to the Calendar (title: the sender's name and the topic; one hour unless they said otherwise; if the time is busy, pick the nearest free hour). Draft a confirmation with create_email_draft_Gmail on the same thread naming the time you booked (never send). Set the Action cell of the Mail Log row (the Row id you were given) with update_cell_Mail_Log to 'Booked <day time>'. Finish with one line." },
     { "id": "tasker", "type": "agent", "name": "Tasker",
-      "description": "Turns requests into todos.",
-      "instructions": "Add one todo in Todo describing what the sender asked for, with the sender's name. Update the Mail Log row: Action = 'todo added'." },
+      "description": "Turns a request into a todo.",
+      "instructions": "You turn a request into work. Add one todo item to the Todo app that says exactly what to do and for whom, with the deadline if they gave one. Set the Action cell of the Mail Log row (the Row id you were given) with update_cell_Mail_Log to 'Todo added'. Finish with one line." },
     { "id": "log", "type": "app_tools", "app": "Mail Log" },
     { "id": "gmail", "type": "app_tools", "app": "Gmail" },
-    { "id": "cal", "type": "app_tools", "app": "Calendar" },
+    { "id": "calendar", "type": "app_tools", "app": "Calendar" },
     { "id": "todo", "type": "app_tools", "app": "Todo" }
   ],
   "edges": [
     { "from": "new-mail", "to": "sorter" },
-    { "from": "sorter", "to": "replier", "when": "the verdict is reply" },
-    { "from": "sorter", "to": "scheduler", "when": "the verdict is meeting" },
-    { "from": "sorter", "to": "tasker", "when": "the verdict is task" },
-    { "from": "sorter", "to": "log" },
+    { "from": "sorter", "to": "replier", "when": "Verdict is reply" },
+    { "from": "sorter", "to": "scheduler", "when": "Verdict is meeting" },
+    { "from": "sorter", "to": "tasker", "when": "Verdict is task" },
+    { "from": "sorter", "to": "log" }, { "from": "sorter", "to": "gmail" },
     { "from": "replier", "to": "gmail" }, { "from": "replier", "to": "log" },
-    { "from": "scheduler", "to": "cal" }, { "from": "scheduler", "to": "gmail" }, { "from": "scheduler", "to": "log" },
+    { "from": "scheduler", "to": "gmail" }, { "from": "scheduler", "to": "calendar" }, { "from": "scheduler", "to": "log" },
     { "from": "tasker", "to": "todo" }, { "from": "tasker", "to": "log" }
   ]
 }
 ```
 
-Test: `run_agent_network_` with an input shaped like the prompt ("New email.\nFrom: Ana <ana@…>\n
-Subject: Coffee next week?\n…"). Then start it and send the inbox a real email.
+Why it is shaped this way: a hand-off carries only the sorter's final message, so the sorter ends
+with the row id and thread id the specialists act on; it decides BEFORE it writes, and names every
+cell, or the verdict comes out empty. Test: `run_agent_network_` with an input in the prompt's shape
+built from a REAL email (`list_inbox_Gmail` gives its thread id). Then start it; to watch it fire,
+mail the inbox from another address — what the account sends itself never counts as new mail.
 Add `"filter": "{{email.fromEmail}} not in noreply@…, notifications@…"` to the trigger to skip noise.
 
 ## 2. Researcher that writes a brief into notes
