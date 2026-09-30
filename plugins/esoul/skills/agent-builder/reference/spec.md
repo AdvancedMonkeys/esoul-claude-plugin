@@ -99,15 +99,19 @@ the first agent.
 
 Common events (always confirm names in the catalogue — they differ by app):
 
-| App | Event | Batch | Item |
+| App | Event | Batch | Variables |
 |---|---|---|---|
-| Gmail (`plugin_gmail`) | `gmail_synced` — new email | yes | `email` |
-| Inbox (`email_viewer`, older mail app) | `email_messages_synced` — new email | yes | `email` |
-| Calendar | calendar event created / Google event synced / slot request submitted | | |
-| Todo | todo item added | | |
-| Contacts | contact added / Google contact arrived | | |
-| Telegram | new Telegram message | yes | |
-| Block notes | page created | | |
+| Gmail (`plugin_gmail`) | `gmail_synced` — new email | yes, item `email` | `{{email.from}}`, `{{email.fromEmail}}`, `{{email.subject}}`, `{{email.snippet}}`, `{{email.body}}`, `{{email.threadId}}`, `{{email.id}}`, `{{email.labelIds}}`, `{{email.attachments[0].filename}}` |
+| Inbox (`email_viewer`, older mail app) | `email_messages_synced` — new email | yes, item `email` | as above |
+| Telegram | `telegram_messages_synced` — new message | yes, item `message` | `{{message.text}}`, `{{message.chatId}}`, `{{message.chat.title}}`, `{{message.from.name}}`, `{{message.from.username}}` |
+| Calendar | `calendar_create_event` — event created | | `{{event.title}}`, `{{event.startTime}}`, `{{event.endTime}}`, `{{event.location}}`, `{{event.description}}` |
+| Calendar | `calendar_external_events_synced` — Google event synced | yes, item `event` | as above |
+| Calendar | `calendar_request_event` — a visitor asked for a slot | | `{{request.startTime}}`, `{{request.submitterName}}`, `{{request.submitterEmail}}`, `{{request.message}}` |
+| Todo | `todo_add_item` — item added | | `{{event.text}}`, `{{event.listName}}` |
+| Contacts | `contact_added_by_agent` / `contact_arrived_from_google` | | `{{contact.displayName}}`, `{{contact.email}}`, `{{contact.organization}}` |
+| Block notes | `blocknote_create_tab` — page created | | `{{event.tabName}}`, `{{event.pageId}}` |
+
+Many more apps emit events (site forms and orders, inventory movements, the cloud browser, training runs, the research graph, the Forge) — the catalogue lists them all with their variables.
 
 **Filter grammar.** Clauses separated by commas are all required (AND). Each clause is
 `<left> <op> <right>` with `==`, `!=`, `in`, `not in`. Field references MUST be in braces —

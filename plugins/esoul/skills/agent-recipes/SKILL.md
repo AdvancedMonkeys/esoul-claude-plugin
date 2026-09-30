@@ -1,6 +1,6 @@
 ---
 name: agent-recipes
-description: Complete, working agent networks for ExternalSoul's agent builder — inbox triage when an email arrives, a researcher with web search writing into notes, lead enrichment over every row of a spreadsheet, a report that builds its own slide deck, approval before anything is sent, a planner handing work to specialists, a daily/event watcher, image making, and networks that call networks. Use with the agent-builder skill when someone asks for a kind of agent and you need the right shape fast; adapt names, apps and instructions to their workspace.
+description: Complete, working agent networks for ExternalSoul's agent builder, and what to build across the apps (Gmail, Telegram, spreadsheets, block notes, calendar, contacts, todo, files, sites) — inbox triage when an email arrives, a Telegram desk that answers from your notes, receipts into a spending sheet, meeting prep from the calendar, a knowledge base that grows from mail, a researcher with web search writing into notes, lead enrichment over every row of a spreadsheet, a report that builds its own slide deck, approval before anything is sent, a planner handing work to specialists, a daily/event watcher, image making, and networks that call networks. Use with the agent-builder skill when someone asks for a kind of agent and you need the right shape fast; adapt names, apps and instructions to their workspace.
 ---
 
 # Agent recipes
@@ -228,8 +228,8 @@ created, a new Telegram message, a notes page created:
   "name": "Todo Helper",
   "default_model": "deepseek/deepseek-v4-flash",
   "nodes": [
-    { "id": "added", "type": "trigger", "event": "<todo item added event from the catalogue>", "source_app": "Todo",
-      "prompt": "A todo was added: {{<variable from the catalogue>}}" },
+    { "id": "added", "type": "trigger", "event": "todo_add_item", "source_app": "Todo",
+      "prompt": "A todo was added to {{event.listName}}: {{event.text}}" },
     { "id": "helper", "type": "agent", "name": "Helper",
       "instructions": "If the todo needs information from the web, research it and put a short note in the Notes app linked from the todo. Otherwise finish with 'nothing to add'." },
     { "id": "web", "type": "web_search" },
@@ -278,3 +278,152 @@ A network is a tool for another: in the catalogue's `workspace_tools`, each othe
 
 Use it when a reusable skill (research, enrichment) should be one call inside a bigger flow. For
 "once per row", use a `sub_agent_mapper` instead (recipe 3).
+
+---
+
+# Across the apps
+
+Every app in a workspace is both a tool an agent can use and, through its events, a reason for a
+network to run. The useful networks connect them: something arrives in one app, an agent reads
+the others, and writes the result where the person will look. Five more complete recipes, then a
+list of shapes worth offering.
+
+## 11. A Telegram desk that answers from your notes
+
+Customers write to the business's Telegram bot; the answer comes from the notes the owner keeps,
+and anything that needs a person becomes a todo. Apps: Telegram (bot connected), block notes
+"Handbook" (prices, hours, policies), Todo.
+
+```json
+{
+  "name": "Telegram Desk",
+  "default_model": "anthropic/claude-haiku-4.5",
+  "nodes": [
+    { "id": "msg", "type": "trigger", "event": "telegram_messages_synced", "source_app": "Telegram",
+      "run_mode": "per_item",
+      "prompt": "Telegram message from {{message.from.name}} in chat {{message.chatId}}:\n{{message.text}}" },
+    { "id": "desk", "type": "agent", "name": "Desk",
+      "instructions": "Answer the message from the Handbook notes only (search_notes, read_page). Reply in the same chat with send_telegram_message, in the customer's language, two or three sentences. If the Handbook does not answer it, or they want to book, pay or complain, reply that a person will get back to them today and add a todo with the chat id and the question." },
+    { "id": "tg", "type": "app_tools", "app": "Telegram" },
+    { "id": "kb", "type": "app_tools", "app": "Handbook" },
+    { "id": "todo", "type": "app_tools", "app": "Todo" }
+  ],
+  "edges": [
+    { "from": "msg", "to": "desk" },
+    { "from": "desk", "to": "tg" }, { "from": "desk", "to": "kb" }, { "from": "desk", "to": "todo" }
+  ]
+}
+```
+
+A bot's messages are its own; with a personal Telegram account connected, sending speaks as the
+owner — use `propose_telegram_reply` there and let the person approve.
+
+## 12. Receipts into a spending sheet
+
+Every email with an invoice or receipt: save the PDF, read it, add a row. Apps: Gmail, spreadsheet
+"Spending" (Date, Vendor, Amount, Currency, Category, File).
+
+```json
+{
+  "name": "Receipts",
+  "default_model": "anthropic/claude-haiku-4.5",
+  "nodes": [
+    { "id": "mail", "type": "trigger", "event": "gmail_synced", "source_app": "Gmail", "run_mode": "per_item",
+      "filter": "{{email.attachments[0].filename}} != ",
+      "prompt": "Email from {{email.from}}, subject {{email.subject}}, message {{email.id}}, first attachment {{email.attachments[0].filename}}" },
+    { "id": "clerk", "type": "agent", "name": "Clerk",
+      "instructions": "If this is not an invoice or receipt, finish with 'not a receipt'. Otherwise save its attachments into the workspace, wait for the file to be indexed, read the total, currency, vendor and date, and add one row to Spending with the file's name in File. Pick Category from: software, travel, food, office, other." },
+    { "id": "gmail", "type": "app_tools", "app": "Gmail" },
+    { "id": "sheet", "type": "app_tools", "app": "Spending" },
+    { "id": "files", "type": "workspace_tools", "tools": ["wait_for_indexing", "search_documents", "get_document_page"] }
+  ],
+  "edges": [
+    { "from": "mail", "to": "clerk" },
+    { "from": "clerk", "to": "gmail" }, { "from": "clerk", "to": "sheet" }, { "from": "clerk", "to": "files" }
+  ]
+}
+```
+
+## 13. Meeting prep from the calendar
+
+When a meeting is created, research the people in it and put a one-page brief in the notes.
+
+```json
+{
+  "name": "Meeting Prep",
+  "default_model": "anthropic/claude-sonnet-4.6",
+  "nodes": [
+    { "id": "evt", "type": "trigger", "event": "calendar_create_event", "source_app": "Calendar",
+      "prompt": "New meeting: {{event.title}} at {{event.startTime}}, {{event.location}}\n{{event.description}}" },
+    { "id": "prep", "type": "agent", "name": "Prep",
+      "instructions": "Work out who the meeting is with (title, description, Contacts). Search the web and the person's mail (search_mail) for the last exchanges. Write a page in the Meetings notes titled with the meeting's date and title: who they are, what was last said, three questions to ask. Finish with the page title." },
+    { "id": "web", "type": "web_search", "limit": 4 },
+    { "id": "gmail", "type": "app_tools", "app": "Gmail" },
+    { "id": "contacts", "type": "app_tools", "app": "Contacts" },
+    { "id": "notes", "type": "app_tools", "app": "Meetings" }
+  ],
+  "edges": [
+    { "from": "evt", "to": "prep" },
+    { "from": "prep", "to": "web" }, { "from": "prep", "to": "gmail" }, { "from": "prep", "to": "contacts" }, { "from": "prep", "to": "notes" }
+  ]
+}
+```
+
+## 14. A knowledge base that grows from the inbox
+
+Newsletters and reports worth keeping become notes, linked to what is already there.
+
+```json
+{
+  "name": "Reading Desk",
+  "default_model": "deepseek/deepseek-v4-flash",
+  "nodes": [
+    { "id": "mail", "type": "trigger", "event": "gmail_synced", "source_app": "Gmail", "run_mode": "per_item",
+      "filter": "CATEGORY_UPDATES in {{email.labelIds}}",
+      "prompt": "Email {{email.id}} from {{email.from}}: {{email.subject}}" },
+    { "id": "reader", "type": "agent", "name": "Reader",
+      "instructions": "Read the email. If it holds nothing worth keeping (a promotion, a receipt, a notification), finish with 'skipped'. Otherwise add what is new to the Library notes with integrate_idea — one idea per call, the source's name and date in the text — so it lands next to related pages, and archive the email (modify_labels, remove INBOX)." },
+    { "id": "gmail", "type": "app_tools", "app": "Gmail" },
+    { "id": "lib", "type": "app_tools", "app": "Library" }
+  ],
+  "edges": [ { "from": "mail", "to": "reader" }, { "from": "reader", "to": "gmail" }, { "from": "reader", "to": "lib" } ]
+}
+```
+
+## 15. Booking requests answered
+
+A visitor asks for a slot on the public calendar page; confirm it by email and log the lead.
+
+```json
+{
+  "name": "Bookings",
+  "default_model": "anthropic/claude-haiku-4.5",
+  "nodes": [
+    { "id": "req", "type": "trigger", "event": "calendar_request_event", "source_app": "Calendar",
+      "prompt": "{{request.submitterName}} <{{request.submitterEmail}}> asks for {{request.startTime}}: {{request.message}}" },
+    { "id": "host", "type": "agent", "name": "Host",
+      "instructions": "Check the Calendar is still free at that time. If it is, add the event and send a short confirmation from Gmail; if not, reply with the two nearest free slots. Add or update the person in the Leads sheet (Name, Email, Asked, Status)." },
+    { "id": "cal", "type": "app_tools", "app": "Calendar" },
+    { "id": "gmail", "type": "app_tools", "app": "Gmail" },
+    { "id": "leads", "type": "app_tools", "app": "Leads" }
+  ],
+  "edges": [ { "from": "req", "to": "host" }, { "from": "host", "to": "cal" }, { "from": "host", "to": "gmail" }, { "from": "host", "to": "leads" } ]
+}
+```
+
+## More shapes worth offering
+
+| When… | An agent… | Apps |
+|---|---|---|
+| a Telegram message asks for something | adds a todo, books a slot, or answers from the notes | Telegram, Todo, Calendar, notes |
+| a mail thread goes quiet for a week | nudges once, then marks the sheet row "cold" | Gmail (`wait_for_reply`), spreadsheet |
+| a contact is added | researches them and fills their company, role and a note | Contacts, web search, notes |
+| a notes page is created in "Ideas" | links it to related pages and adds next steps as todos | block notes (graph tools), Todo |
+| a site form or order comes in | answers the customer, updates stock, logs the order | site, Gmail, inventory, spreadsheet |
+| every row of a sheet (fan-out) | writes each person a personal draft, enriches, scores | spreadsheet, Gmail drafts, web search |
+| a file lands in the workspace | reads it (search_documents) and files a summary | files, notes |
+| once, on request | builds a deck, a report page, a film script from the workspace | slideshow (`open_app`), notes, sheets |
+| a campaign reply needs a decision | asks the person with options, then acts | Gmail campaign tools, `ask_user` |
+
+The pattern is always the same three questions: what event starts it (or does the person start it),
+which apps does each agent need to read and write, and where does the person look for the result.
