@@ -12,7 +12,7 @@ set -euo pipefail
 KINETIC="${1:?usage: sync-skills.sh /path/to/kinetic}"
 SRC="$KINETIC/scripts/skills/desktop"
 DST="$(cd "$(dirname "$0")/.." && pwd)/plugins/esoul/skills"
-HOSTED=(memory browser-use forge-app-builder math-explainer-video block-notes slideshow training-monitor research-study website website-story website-look website-films website-media website-publish)
+HOSTED=(memory email-campaign browser-use forge-app-builder math-explainer-video block-notes slideshow training-monitor research-study website website-story website-look website-films website-media website-publish)
 for s in "${HOSTED[@]}"; do
   [ -f "$SRC/$s/SKILL.md" ] || { echo "missing source: $s" >&2; exit 1; }
   rm -rf "${DST:?}/$s"; mkdir -p "$DST/$s"
@@ -34,4 +34,12 @@ PHANTOM=$(comm -13 <(echo "$REAL") <(echo "$USED")); MISSING=$(comm -23 <(echo "
 if [ -n "$PHANTOM" ]; then echo "browser-use names tools that do not exist: $PHANTOM" >&2; exit 1; fi
 if [ -n "$MISSING" ]; then echo "browser-use never mentions real tools: $MISSING" >&2; exit 1; fi
 echo "browser-use: $(echo "$REAL" | wc -l) tools, all real, all documented"
+# email-campaign may name only tools the Gmail app (plugin_gmail, installed from the Forge) really has.
+GMAIL="$KINETIC/src/plugins/_installed/gmail/app.tsx"
+GREAL=$(grep -oE '\[`[a-z_]+_\$\{base\}`\]' "$GMAIL" | grep -oE '[a-z_]+_\$' | sed 's/_\$$//' | sort -u)
+GUSED=$(grep -oE '`[a-z_]+_(<app>)?`' "$DST"/email-campaign/SKILL.md | tr -d '`' | sed 's/<app>$//; s/_$//' | sort -u)
+HOSTED_TOOLS="list_workspaces create_app get_app_tools call_app_tool upload_file"
+GPHANTOM=$(comm -13 <(echo "$GREAL") <(echo "$GUSED" | grep -vxF -f <(tr ' ' '\n' <<<"$HOSTED_TOOLS")))
+if [ -n "$GPHANTOM" ]; then echo "email-campaign names tools the Gmail app does not have: $GPHANTOM" >&2; exit 1; fi
+echo "email-campaign: every Gmail tool it names is real"
 echo "ok"
