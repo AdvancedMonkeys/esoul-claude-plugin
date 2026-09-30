@@ -58,8 +58,9 @@ never breaks them. Take exact names from `get_app_tools`; never guess.
    Read the steps: did each agent call the tools you expected, did the hand-off happen, is the
    result right? Adjust the spec (instructions are the usual fix) and try again.
 7. **Start it** (`start_agent_network_`) only when the person wants it to act on its own. A
-   trigger fires only on events AFTER the start. To see it fire on mail, the mail must come from
-   ANOTHER address: what the account sends itself is already in the app and is never new mail.
+   trigger fires only on events AFTER the start. To see it fire on mail, send the inbox an email
+   from Gmail itself (another address, or the same account from gmail.com) — NOT with the Gmail
+   app's `send_email_`: what the app sends it records as sent, and that never counts as new mail.
 8. **Report** what it will do, on what, with which model, what a run cost (a sorter on Haiku plus
    one specialist on DeepSeek flash is about $0.004 an email), and how to stop it.
 

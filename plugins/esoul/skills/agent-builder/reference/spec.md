@@ -126,9 +126,9 @@ take a comma list, or an array field:
 {{email.fromEmail}} not in noreply@x.com, alerts@y.com
 ```
 
-A trigger only fires on events AFTER it was started. Mail the account sends — including to itself —
-is not new mail (the app already holds it), and neither are drafts, spam, bounces or auto-replies: to
-see a mail trigger fire, send from another address.
+A trigger only fires on events AFTER it was started. Mail sent from the Gmail app itself is recorded
+as sent and is never new mail, and neither are drafts, spam, bounces or auto-replies. To see a mail
+trigger fire, send the inbox an email from anywhere else — another address, or gmail.com.
 
 ## Edges
 

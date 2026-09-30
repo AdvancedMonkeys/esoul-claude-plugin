@@ -72,7 +72,8 @@ Why it is shaped this way: a hand-off carries only the sorter's final message, s
 with the row id and thread id the specialists act on; it decides BEFORE it writes, and names every
 cell, or the verdict comes out empty. Test: `run_agent_network_` with an input in the prompt's shape
 built from a REAL email (`list_inbox_Gmail` gives its thread id). Then start it; to watch it fire,
-mail the inbox from another address — what the account sends itself never counts as new mail.
+email the inbox from anywhere but the Gmail app (another address, or gmail.com) — what the app
+sends it records as sent, and that never counts as new mail.
 Add `"filter": "{{email.fromEmail}} not in noreply@…, notifications@…"` to the trigger to skip noise.
 
 ## 2. Researcher that writes a brief into notes
