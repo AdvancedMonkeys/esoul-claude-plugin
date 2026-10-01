@@ -16,8 +16,10 @@ Ask all five at once, with your best guess filled in so they can just correct it
 4. **What runs while nobody is looking?** A sync, a poll, a wait for a reply, a long job. → a
    task; or their computer.
 5. **What does it touch outside the workspace?** Their Drive, their computer, an API with a
-   login, another app on the workspace, a machine that phones home. → files, `computer()`,
-   connections, `workspaceTools`/bindings, a `token` route.
+   login, another app on the workspace, a machine that phones home. → files, a program or
+   commands on their computer (`computers.md`), their account at Google, Microsoft or any
+   OAuth / API-key service (a `credentials` slot — `accounts.md`), `workspaceTools`/bindings, a
+   `token` route.
 
 Then say the app back in five lines — what it stores, who sees what, what an agent can ask it
 to do, what runs in the background, what it needs granted — and start. Do not build an app you
@@ -32,9 +34,9 @@ cannot describe in five lines.
 | must be true now for a decision (stock, availability) | an **op** over tables, one refusal in one place | two folds can be read in the same instant; one op cannot oversell |
 | a live view (a clock, a stream) | a **route** (SSE) | milliseconds; dies with the request |
 | durable work (a sync, a wait for a reply, a job that must finish) | a **task** on Inngest | survives everything; seconds per hop |
-| heavy compute, GPUs, local data, a repo | **their computer** (`computer()`) | it is their hardware; the app orchestrates and remembers |
+| a service that keeps running on their machine, heavy compute, GPUs, local data, a repo | **their computer**: the app's own **program** (`device.program`) or declared **commands** (`computers.md`) | it is their hardware; the app orchestrates and remembers; only the installed app reaches a computer |
 | pictures, datasets | **files** (workspace + Drive) | one consented surface; grants for machines |
-| a service with a login | a **connection** (OAuth2 / API key) | the platform holds and refreshes the token |
+| the person's account at a service — Google, Microsoft (Outlook, OneNote), Dropbox, GitHub, Notion… | a **credential slot** (`credentials`, family `google`, `oauth2` or `apiKey` — `accounts.md`) | the platform holds the token or key, refreshes it, and sends it only to the hosts the person approved; the app never sees it; a real account only in the installed app |
 | another app's capability | `workspaceTools` (a grant) or a **binding** (`uses`/`provides`) | the person consents; the other app keeps its own refusals |
 | a marketing site / homepage | the **site app** (skill `build-esoul-website`), not a Forge app | already built, published to their handle |
 
@@ -92,7 +94,18 @@ DETACHED, returns a run id) / `poll` (the helper composes a ≤ 6 KB summary on 
 never a raw log); a task `watch-run` polls every 30 s with `step.run` and dispatches the verdict
 event; UI = a drawer with the steps as buttons with state and a header that says "● Running…
 stage · step · min" until a poll finds the process gone; tools = `plan_`, `start_`, `status_`.
-Machine facts are in `my-computer.md`.
+Machine facts are in `my-computer.md`. A NEW research tool that lives on a computer is better as
+a device program (next shape) than a helper driven through My Computer.
+
+**A service on their computer** (a local model server, a sampler, a bridge to a device). fold =
+the chosen computer (`linkId`), settings, run/answer records; server = ops `ask` (→
+`devices(ctx).program(linkId).send("ask", …)`, ≤ 55 s, ≤ 1 MB), `report` (only the program —
+checks `ctx.viewer.device`; idempotent by `requestId`), `computers` (`devices(ctx).list()` → who is
+online, the program's phase and words); `device.program` with setup steps (venv, deps), a
+self-test and `"resident": true`; `device/main.ts` starts the service, `p.on("ask")` fetches its
+localhost, long work answers `accepted` then `p.op("report")`; UI = `<ConnectComputer/>` + a
+computer picker. Build the program and the ops with fakes in the box (a box cannot reach a
+computer), install, then the person connects. The whole contract: `computers.md`, SDK `docs/20`.
 
 **A shop / e-store**: tables = `Product` (indexes `contains` on tags, `text` on title), `Order` +
 `OrderLine` (price at the time), `Customer` (sealed contact fields, `owner: "creator"`); roles

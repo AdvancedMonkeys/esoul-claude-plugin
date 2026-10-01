@@ -123,7 +123,10 @@ the `[tracking]` line — it is what a poll greps to prove the mirror is live.
 ## 4. From a Forge app that trains on the user's computer — the "Train model" button
 
 The app (built with `forge-app-builder`) orchestrates a `my_computer`; the machine logs to the
-monitor by itself. Three seams, each already built:
+monitor by itself. (This is the My Computer path on purpose: `esoul.track` needs the workspace
+credential a paired My Computer holds. An app's own device program — forge-app-builder →
+`reference/computers.md` — holds no workspace credential; it reports to its app through `p.op`,
+and the app's server code passes results on.) Three seams, each already built:
 
 1. **The credential is on the machine already.** When the person paired the computer with the
    "SDK access" box ticked (or set **SDK: Write** in the My Computer app), the agent keeps a

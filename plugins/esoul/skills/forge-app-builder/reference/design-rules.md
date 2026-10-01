@@ -26,6 +26,12 @@ check them. Start with the palette — most "doesn't feel native" comes down to 
 9. **Empty state present and actionable** — a fresh app says what to do first, in the app's own
    voice, not "No data".
 10. **Keyboard where it makes sense**: arrows / Enter / Escape / Delete on grids, lists, editors.
+11. **A click shows its result at once, and a failure is named, not hidden.** State the person
+    changes is an event — the dispatch is the optimistic update. A server op is wrapped in
+    `runOptimistic({ key, what, apply, revert, send })`: the screen changes this frame; if the
+    request fails it goes back, and the platform's one banner (bottom-centre pill: a dot, "*Cheer*
+    failed — no connection", Try again, ×) says so. Name `what` in the person's words; a refusal
+    shows its reason without Try again. Drive it: take the network away in `drive_app` and look.
 
 ## Responsive, concretely
 

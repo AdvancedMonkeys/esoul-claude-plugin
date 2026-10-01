@@ -6,7 +6,7 @@ them stay inside the app's own workspace.
 | Door | Direction | Consent | From |
 |---|---|---|---|
 | `workspaceTools` grant → call another app's TOOL | you → them | the manifest lists `"<applicationType>:<tool base>"`; the person reads it at install | UI `useWorkspaceTools`, server `callWorkspaceTool`, `computer()` |
-| `readAppState(nodeId)` | you read them | same workspace | server |
+| `readAppState(nodeId)` | you read them | your own type freely; another type needs a `workspaceTools` grant for it | server, only inside an op / route / task / webhook |
 | `emitPluginAppEvent` | you write their fold | same workspace; their processors decide | server |
 | bindings `uses` / `provides` | a SLOT the owner fills | the owner binds one app to another; a contract, not a toolkit | server `ctx.apps.<slot>` |
 | `triggerMeta` on your events | they (and agents) wake on you | the event is declared wake-able | agent-builder Trigger node, chat `wait_for_workspace_event` |
@@ -37,7 +37,11 @@ with the call mocked, drive for real with the preview open on the board or after
 ## 2. Reading another app
 
 `readAppState(nodeId)` → `{ nodeId, workspaceId, applicationType, foldedSeq, state }` or `null`.
-It is the canonical fold at head — never a raw database read (the wall refuses `prisma`; the
+It reads for the call the platform is running: your own app type in your workspace; another type
+only when the manifest grants one of its tools (`"spreadsheet:add_row"` covers reading a
+spreadsheet) — refused, naming the grant to add, otherwise; `null` for an app in another workspace
+(the same answer as one that does not exist); a webhook sees only its own type; outside an op,
+route, task or webhook it throws. The box applies the same rule. It is the canonical fold at head — never a raw database read (the wall refuses `prisma`; the
 state column lags the log). Read what you need and stop: folding a big app is a paged rebuild.
 For built-in apps the state shape is that app's; read it once with the hosted `read_app_state`
 to learn it before writing code against it.
@@ -83,16 +87,34 @@ shows it — an event without `triggerMeta` is undiscoverable). Declare it on th
 something happened (`order_placed`, `run_finished`), not on bursts. Your own tasks may also wake
 on events (`ctx.step.waitForEvent`, `server-and-tasks.md`).
 
-## 6. The apps with their own skill
+## 6. Asking the person, and being opened at the right place
+
+- **A question the person must answer** (an agent waiting on a decision) goes to the platform's
+  questions bell, on every workspace: `questions(ctx).ask({ key, question, options?, open?,
+  answer: { op, args } })` from server code. Answering in the bell calls YOUR `answer.op` with
+  `{ ...args, answer }` as the person who answered, through the op's own access rules; reply
+  `{ ok: false, error }` when the question is gone and the bell closes it with your words. When
+  your own screen took the answer, `questions(ctx).settle(key, { answer })`. One question per
+  `key` — a replayed ask is the same one. In a box there is no bell (`{created:false}`).
+- **Opened from outside**: the tasks pane, a chip in a spreadsheet, a recall hit or the bell's
+  Open button name a place in your app (`{ thread: id }`, `{ campaign: id }`); hear it with
+  `useAppNav(nodeId, (target) => …)` from `esoul-sdk/react` and go there (`docs/05`).
+- **A network waiting for mail** in your inbox-like app: a tool that, inside an agent network run
+  (`runCtx` present), emits `mailWaitDirective(runCtx, {...})` parks the run on the platform's wait
+  kernel (`docs/04`); your app must announce arrivals as `workspace/email.message_arrived` for it
+  to wake (the platform does it for the Gmail app).
+
+## 7. The apps with their own skill
 
 Before calling a built-in app, read its skill: it names the real tool base names, the state
-shape, and what goes wrong. `my-computer.md` (this skillset) for `my_computer`; the plugin's
+shape, and what goes wrong. `computers.md` (this skillset) for an app's own part on the
+person's computers, `my-computer.md` for driving a paired `my_computer`; the plugin's
 `training-monitor` (the workspace's TensorBoard — a training app logs to it from the machine
 with `esoul.track`), `block-notes` (pages, folders, images, knowledge), `slideshow` (slides as
 TSX, judged by a critic). For any other app: `get_app_tools` on an instance and read the
 descriptions; `read_app_state` once to learn its shape.
 
-## 7. Proving it
+## 8. Proving it
 
 - Unit: mock `callWorkspaceTool`/`useWorkspaceTools` and assert the ARGUMENTS (the tool base,
   the target, the payload) — a mock that repeats your mistake proves nothing; read the other

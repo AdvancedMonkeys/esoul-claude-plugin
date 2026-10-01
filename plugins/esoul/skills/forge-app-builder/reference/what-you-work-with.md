@@ -7,23 +7,28 @@ it does not have, or from believing a preview about something only an install ca
 
 | Surface | What it is | You reach it with |
 |---|---|---|
-| **The hosted connection** (`esoul`, OAuth) | the person's whole account: every project, workspace, app | 15 general tools (below) |
-| **The Forge board** | an app on one workspace; opens a **box** per app being built | `get_app_tools(<board>)` → 28 `<verb>_<board>` tools via `call_app_tool` |
+| **The hosted connection** (`esoul`, OAuth) | the person's whole account: every project, workspace, app | its general tools (below) |
+| **The Forge board** | an app on one workspace; opens a **box** per app being built | `get_app_tools(<board>)` → `<verb>_<board>` tools via `call_app_tool` |
 | **The box** (workbench) | a cloud machine (4 vCPU, 8 GB) that is a plain Node project: `esoul-sdk` and the app host from npm, your app at `src/plugins/<id>`, a local git of checkpoints, the preview served by the host — nothing of the platform, no token, no secret | only through the board's tools; you have no shell except `run_in_app` |
 
-The **fifteen hosted tools**: `list_workspaces`, `search_workspace`, `read_app_state`,
+The **hosted tools** (2026-10): `list_workspaces`, `search_workspace`, `read_app_state`,
 `list_app_entries`, `read_app_entry`, `get_app_tools`, `call_app_tool`, `create_app`,
 `create_workspace`, `list_files`, `upload_file`, `view_image`, `get_run_status`,
-`describe_profile`, `publish_homepage`. Everything an app can do is behind `get_app_tools` →
+`describe_profile`, `publish_homepage`, `check_live_site`, `recall`, `remember`, `timeline`,
+`who_did_what`, `list_project_tree`, `move_app`, `list_dock`, `pin_to_dock`, `unpin_from_dock`,
+`media_models`, `generate_image`, `generate_video`, `generation_status`. The list grows; trust
+what your client shows. Everything an app can do is behind `get_app_tools` →
 `call_app_tool` on that app — the list stays small, nothing is out of reach. **Two names
 collide**: the hosted `call_app_tool`/`read_app_state` act on installed apps; the board's
 `call_app_tool_<board>`/`read_app_state_<board>` act on the app under construction in the box.
 
-The **28 board tools**: `open_workbench`, `close_workbench`, `orient_app`, `list_app_files`,
-`read_app_file`, `search_app_files`, `read_platform_file`, `write_app_file`, `edit_app_file`,
-`delete_app_file`, `preview_app`, `look_at_app`, `drive_app`, `call_app_tool`, `read_app_state`,
-`test_app`, `check_app`, `run_in_app`, `app_problems`, `resolve_problem`, `commit_app`,
-`app_history`, `diff_app`, `restore_app`, `put_app_asset`, `remove_app_asset`, `install_app`, and the platform owner's `ship_app`, `merge_app`, `add_forge_task`.
+The **board tools**: `set_build_plan`, `update_build_step`, `open_workbench`, `close_workbench`,
+`orient_app`, `list_app_files`, `read_app_file`, `search_app_files`, `read_platform_file`,
+`write_app_file`, `edit_app_file`, `delete_app_file`, `preview_app`, `look_at_app`, `drive_app`,
+`call_app_tool`, `read_app_state`, `test_app`, `check_app`, `run_in_app`, `app_problems`,
+`resolve_problem`, `commit_app`, `app_history`, `diff_app`, `restore_app`, `put_app_asset`,
+`remove_app_asset`, `install_app` (`status:true` follows it), `uninstall_app` (a dry run unless
+`confirm`), and the platform owner's `ship_app`, `merge_app`, `add_forge_task`.
 (The same handler serves the Python SDK's `esoul.forge` and the `esoul-mcp` server's `forge_*`
 tools for people on a Personal Access Token; the verbs and answers are the same.)
 
@@ -54,7 +59,12 @@ A box runs your app over an in-process stand-in for the platform (a workbench st
 | files + Drive (`filesForOp`, the hooks) | **yes, the REAL files** through the box grant — no board tab needed | — (a write in a box is a real write: drive writes on a scratch folder the person names) |
 | other apps' tools, `computer()`, `readAppState` of another app | yes **only while the board's tab is open on the preview**; headless you get "no board is connected to this preview" | — |
 | webhooks | the handler runs; no sender can reach a box | receiving |
-| connections (OAuth / API key) | not yet | a granted connection |
+| the person's Google account (`credentials` slot) | one SIMULATED Gmail account, `owner@sim.mail.example`, with the same URL and caller checks as production (`docs/08`); Calendar/Contacts/Drive answer 404 | their real account, assigned in Account settings → Google |
+| an `oauth2` / `apiKey` `credentials` slot (Microsoft, Dropbox, Notion, …) | no outside account: `status()` is `not_bound` with the reason, `fetch()` refuses after the same host wall — test with `fakeCredentials` | the person's real account, connected once in Account settings → Accounts and assigned (`accounts.md`) |
+| an app's own `connections` (older; OAuth / API key) | no (`getPluginConnectionCredentials` throws) | readable only from the app's own call for the workspace owner's connection — use a `credentials` slot instead |
+| model calls (`llm(ctx)`, `ctx.llm`) | a scripted model answers (`docs/19`), nothing is billed | real models, billed to the owner within the manifest's budget |
+| a computer (`devices(ctx)`, `<ConnectComputer/>`) | **no**: `list()` is `[]`, everything else throws "computers connect to INSTALLED apps"; the Connect panel shows a note | install, then the person connects a computer (`computers.md`) |
+| the questions bell (`questions(ctx)`) | `ask` answers `{created:false}`; your own screen shows the question | the bell on every workspace |
 | `generateAppImage` | refused on purpose (it bills) | — |
 | `renderChartImage` | returns `base64`, never a `url` (nothing to store a file in) | a stored PNG URL |
 | VIEW AS | personas: `owner`, `member`, `member-readonly`, `visitor-a`, `visitor-b`, `anonymous`, `agent`; with a grant: `visitor-a?grant=customer&customer=143` | production never reads a persona |
@@ -107,6 +117,7 @@ restarts). A read that cannot happen (no preview) says nothing rather than "clea
 | a task | seconds per hop (kick → task 2–15 s; a fold read ≈ 3 s); `description` ≤ 255 chars (it is the Inngest function name — longer breaks the WHOLE sync silently) |
 | `pollTasks` | 5-minute granularity, minimum 5 |
 | a `my_computer` | one wait ≤ 55 s, one command ≤ 900 s, **8,000 characters of output kept**; commands approval-gated unless the OWNER set Auto |
+| a device program | `send` waits ≤ 55 s; ≤ 1 MB JSON each way; a queued message expires in 600 s; `p.op` resent after ~4 s (make ops idempotent); the program ≤ 2 MB / 200 files, Node built-ins only |
 | files | `read` cap 25 MB (100 MB ceiling); `readMany` ≤ 200 refs; `listAll` max 20,000; a read grant 1 h default, 24 h max; a route token ≤ 30 days |
 | tool output to a model | keep answers short; a picture reaches a chat only as a URL — never base64 in text |
 | the box | idles out 10 min after the last touch; `check_app` takes minutes; the first `open_workbench` on a board takes minutes; a production deploy after a merge 7–10 min |

@@ -53,6 +53,10 @@ await db.ticket.findMany({ where: { status: "open", tags: { has: dept } }, order
 await db.ticket.aggregate({ where: { status: "open" }, _count: true });                  // count in the database, never page-and-add
 const order = await db.$transaction(async (tx) => { const o = await tx.order.create({ data }); await tx.cartLine.deleteMany(); return o; });   // one breath or neither
 ```
+**Paging**: `take` is 200 at most; `cursor: { id }` returns the rows AFTER that row — never add
+Prisma's `skip: 1` (refused). Pages end in `id`, so ties on `orderBy` cannot repeat or vanish. To
+read a whole table, loop until a page is short; to count or sum, ask `count`/`aggregate`.
+
 The surface: `findMany findFirst findUnique count aggregate groupBy create createMany update
 updateMany upsert delete deleteMany $transaction`. `ctx.viewer` is already inside the client —
 there is no argument that reads someone else's rows; naming `workspaceId`/`nodeId`/`ownerId`
@@ -127,18 +131,22 @@ narrows by it — nothing an app writes decides access. The full walk-through, w
 `docs/13-people-and-access.md` → "Roles the owner composes" and "Giving one person access to
 one app" (how to read the SDK docs: `SKILL.md` → "Reading the SDK's own docs").
 
-## 3. Connections — a service with a login
+## 3. Accounts — a service with a login
 
-```json
-"connections": [{ "key": "github", "kind": "oauth2", "label": "GitHub", "authorizeUrl": "…", "tokenUrl": "…", "oauthScopes": ["repo"], "clientIdEnv": "GITHUB_CLIENT_ID", "clientSecretEnv": "GITHUB_CLIENT_SECRET" }]
-```
-(`kind: "apiKey"` declares `headerNames`; the person pastes the key once.) The person grants in
-Account settings; the platform holds tokens sealed and refreshes them; an instance is bound to
-one connection (`ctx.cloudConnectionId`). Server: `getPluginConnectionCredentials(ctx.cloudConnectionId,
-PLUGIN_ID)` → `{ kind: "oauth2", accessToken }` | the key. Never log it, never put it in an event,
-never return it from a tool. **Not available in a preview yet** — test the op's shape with a fake
-credential (`startMockOAuth()` in `esoul-sdk/testing`), install to run it for real. Env var
-NAMES in the manifest, never values; the operator sets them.
+**Read `accounts.md`.** In short: the person's account at Google, Microsoft (Outlook, OneNote,
+OneDrive), any OAuth 2.0 provider, or a pasted API key is a **credential slot** in plugin.json
+(`family: "google" | "oauth2" | "apiKey"`). The person connects it once in Account settings
+(→ Google, or → Accounts) and assigns it to the app; your code calls
+`credentials(ctx).slot(name).fetch(url)` (in a task `ctx.credentials(name)`) and never holds the
+token, key or client secret — the platform adds it and sends it only to the slot's declared
+`hosts` (Google: the endpoints its scopes reach). UI: `useCredential` + `<ConnectAccount/>`. In a
+box a Google slot talks to a simulated Gmail; an `oauth2` / `apiKey` slot answers `not_bound`, so
+test those calls with `fakeCredentials`. The older `connections` +
+`getPluginConnectionCredentials` hand the token to your code — never for new work.
+
+**Model calls** are not a connection: declare `llm` and call `llm(ctx)` / `ctx.llm` (billed to
+the owner within the manifest's budget; a scripted model in the box; `docs/19`). Never import a
+model provider's SDK — the import wall refuses it.
 
 ## 4. Files — the workspace's files and Google Drive
 
@@ -161,6 +169,17 @@ preview's `<img>` and for a machine's `curl`; one source of one workspace; 1 h d
 · `getUrl`, `saveWorkspaceFile`, `importToWorkspace`. Errors are typed (`FileSourceError.kind`:
 `not_declared source_unavailable not_found too_large read_only disabled bad_ref`); a source that
 cannot answer THROWS `source_unavailable`, never an empty list — show the message.
+
+**Saving files, and lists of files.** Saves are idempotent (the same `key`, or the same bytes and
+name, into the same folder is the same file — `deduped: true`; a clash becomes `"quote (2).pdf"`
+unless `onConflict` says `skip`/`fail`), and every save appends `workspace/file_added`. A LIST of
+files goes as one durable platform job the person watches in the tasks pane ("Saving 37 files to
+Mail/Quotes — 12/37", Stop, Retry): `files.transfer({ requestKey, title, to: { sourceId:
+"workspace", path: "Mail/Quotes" }, onConflict, items: [{ from: "google-drive:/Reports/q3.pdf" },
+{ from: { sourceId, ref } }, { producer: "attachment", key }] })` → a `Transfer`;
+`getTransfer(id)` / `listTransfers()`; UI `useTransfer(id)`; in a task `ctx.files`. Bytes your app
+makes itself (a mail attachment, a render) come from a `fileProducers` entry in `server.ts`. A retry
+leaves no residue. The whole contract is `docs/09-files.md` → "Moving a list of files".
 
 Label files: `pairImagesWithLabels(entries)` from ONE listing is the single answer to "which
 images are labelled"; `parseLabelMe` / `serializeLabelMe` / `labelFileNameFor` beside it.

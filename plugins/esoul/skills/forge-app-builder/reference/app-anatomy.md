@@ -33,7 +33,8 @@ package.json       only for an npm package the platform lacks (a visible line in
 | `channel` | realtime topics with audiences (`all` / `viewer` / `role:<name>`) and `mayAddress` |
 | `workspaceTools` | grants to call OTHER apps' tools: `"<applicationType>:<tool base>"`; absent = none |
 | `uses` / `provides` | binding slots and contracts (`talking-to-other-apps.md`) |
-| `connections` | OAuth2 / apiKey declarations naming ENV VARIABLE names, never values |
+| `credentials` | the person's account the app uses — one slot: `google` (scopes), `oauth2` (any OAuth provider: endpoints, scopes, `hosts`) or `apiKey` (`hosts`, header); code calls `credentials(ctx).slot(n).fetch`, never holds the secret (`accounts.md`) |
+| `connections` | older OAuth2 / apiKey declarations naming ENV VARIABLE names, never values; the token reaches your code — prefer `credentials` |
 | `fileSources` | `{ workspace: "read"\|"readwrite", providers: [...], write: [...] }`; absent = no file access |
 | `platformApi` | `{ min, max }` of the platform contract |
 

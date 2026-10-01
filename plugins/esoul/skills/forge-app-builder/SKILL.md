@@ -1,6 +1,6 @@
 ---
 name: forge-app-builder
-description: Turn an idea into a real ExternalSoul app over MCP — a native app with its own events, UI, agent tools, server ops, durable tasks, tables, realtime, files, other apps and the user's own computer — built and PROVEN in the user's Forge workbench with tools (look, drive, call its tools, run its tests) before anyone installs it. Use whenever the user says "make me an app", "I want an app that…", "build this in the Forge", asks for a research tool, a store, a dashboard, a labeller, a data pipeline on their machine, or asks to change an app still being built. For a marketing site or homepage use build-esoul-website instead.
+description: Turn an idea into a real ExternalSoul app over MCP — a native app with its own events, UI, agent tools, server ops, durable tasks, tables, realtime, files, other apps and the user's own computer, and the person's accounts at other services (Gmail, Outlook, OneNote, Dropbox, GitHub, Notion — any OAuth or API-key login, the secret never in the app) — built and PROVEN in the user's Forge workbench with tools (look, drive, call its tools, run its tests) before anyone installs it. Use whenever the user says "make me an app", "I want an app that…", "build this in the Forge", asks for a research tool, a store, a dashboard, a labeller, a data pipeline on their machine, an app on their Microsoft / Outlook / OneNote / Google account, or asks to change an app still being built. For a marketing site or homepage use build-esoul-website instead.
 ---
 
 # Build an ExternalSoul app in the Forge
@@ -26,24 +26,27 @@ The rest is the contract, read as the app needs it:
 
 | Reference | Read it for |
 |---|---|
-| `what-you-work-with.md` | the 15 hosted tools, the 28 board tools, the box, the preview's powers and LIMITS, caps, costs, personas |
+| `what-you-work-with.md` | the hosted tools, the board tools, the box, the preview's powers and LIMITS, caps, costs, personas |
 | `idea-to-app.md` | the interview, the shape decision (fold / tables / machine / external / site), the write order, worked shapes |
 | `app-anatomy.md` | the code contract: manifest, schema, events, ops declared once, UI, server, tests |
 | `tools-chat-and-voice.md` | how defining tools lets chat, voice, agents and MCP drive the app; honest results; **test tools** |
 | `talking-to-other-apps.md` | calling other apps (UI + server), reading them, bindings, events other apps and agents can wake on |
-| `my-computer.md` | using the person's paired computer from an app — in the Forge and after install |
+| `computers.md` | parts of the app that run on the person's computers: a SERVICE of its own kept running there (a program), declared commands, agents in a folder — and why only the installed app can reach a computer |
+| `my-computer.md` | the older path: driving a paired My Computer app with shell strings (`computer()`) |
 | `server-and-tasks.md` | ops, routes (SSE, a token door for machines), webhooks, Inngest tasks and the replay model, realtime |
-| `data-people-files.md` | your own tables and rules, roles and access levels, connections, files and Drive, public viewers |
+| `accounts.md` | the person's accounts at other services — Google, Microsoft (Outlook, OneNote), any OAuth 2.0 provider, API keys: declare a slot, call through the platform, what the person sets up once, the Forge limit, `fakeCredentials` |
+| `data-people-files.md` | your own tables and rules, roles and access levels, files and Drive (transfers), public viewers, model calls |
 | `telling-people-later.md` | notifying a person AFTER the request: a status change, a cadence, a first visit — the recipient table, the task, the email app on the workspace |
 | `design-rules.md` | what "native" and "responsive" mean here; the pre-ship checklist |
 | `test-and-ship.md` | proving every arm with tools, the problem journal, removing test tools, installing (one call) |
 
 ## Where the tools are
 
-Over the hosted connection you have fifteen general tools (`list_workspaces`, `search_workspace`,
-`read_app_state`, `get_app_tools`, `call_app_tool`, `create_app`, …). **The Forge is an app** on
-the person's workspace (type `forge`, usually named "Forge"); its 30 workbench tools are minted
-as `<verb>_<board name>` and reached like any app's:
+Over the hosted connection you have a small set of general tools (`list_workspaces`,
+`search_workspace`, `read_app_state`, `get_app_tools`, `call_app_tool`, `create_app`, …;
+`what-you-work-with.md` §1 lists them). **The Forge is an app** on the person's workspace (type
+`forge`, usually named "Forge"); its workbench tools are minted as `<verb>_<board name>` and
+reached like any app's:
 
 ```
 list_workspaces                                          → find the board's app id
@@ -67,26 +70,77 @@ may author on a board; a collaborator's chat is refused and told so.
 
 ## Reading the SDK's own docs
 
-These references are the distilled rules. The SDK ships its full CONTRACT as text, and when a
-reference and the contract disagree, the contract wins — read it, and say which you used.
+These references are the distilled rules. The SDK — **esoul-sdk on npm,
+<https://www.npmjs.com/package/esoul-sdk>** — ships its full CONTRACT as text, and when a reference
+and the contract disagree, the contract wins — read it, and say which you used. Whenever you need
+more than these references say about ANY part of the SDK, go there.
 
 **In a box, read the INSTALLED version** — it is what this app compiles against.
 `read_platform_file {path}` opens (the box holds the npm package, so its docs live under
 `node_modules/esoul-sdk/`; the SDK's sources are at `packages/esoul-sdk/src/`):
 - `node_modules/esoul-sdk/docs/<nn>-<chapter>.md` — 01 getting-started · 02 manifest · 03 events-and-state ·
-  04 tools · 05 ui · 06 server · 07 background-tasks · 08 connections · 09 files · 10 testing ·
+  04 tools · 05 ui · 06 server · 07 background-tasks · 08 accounts (connections) · 09 files · 10 testing ·
   11 shipping · 12 rules · 13 people-and-access · 14 database · 15 realtime · 16 bindings ·
-  17 editing-and-merging;
+  17 editing-and-merging · 18 your-computer · 19 model-calls · 20 a-service-on-your-computer;
 - `node_modules/esoul-sdk/api-reference.md` — every export with its signature and doc comment; the
   place to look ONE name up (`search_app_files {scope:"sdk", query:"<name>"}` finds it, and greps
   the SDK's source too);
 - `node_modules/esoul-sdk/README.md`, `node_modules/esoul-sdk/llms-full.txt` (the whole contract).
 
-**With no box open**, the published package: [npmjs.com/package/esoul-sdk](https://www.npmjs.com/package/esoul-sdk).
+**With no box open**, the published package: [npmjs.com/package/esoul-sdk](https://www.npmjs.com/package/esoul-sdk)
+(its README is the overview; its `CHANGELOG.md` says what each version added).
 Fetch `https://unpkg.com/esoul-sdk/llms.txt` (the index), then
 `https://cdn.jsdelivr.net/npm/esoul-sdk/llms-full.txt` (the whole contract in one file) or one
 chapter at `https://unpkg.com/esoul-sdk/docs/<nn>-<chapter>.md`. Published and installed can
 differ by a version — for an app that is open in a box, the box's copy is the truth.
+
+## What the SDK gives an app (and where it is explained)
+
+Know these exist before designing — each has a chapter, and the box answers for each (§3 of
+`what-you-work-with.md` says what a preview can and cannot do):
+
+| Capability | API | Chapter |
+|---|---|---|
+| server truth, one declaration | `defineOps` → `handleOp` → `opTool`; `ctx.emit` | 04, 06 |
+| events only the server may write | `origin: "server"` on an event definition | 03 |
+| durable background work | `tasks`, `kickPluginTask`, `pollTasks`, `ctx.step` | 07 |
+| its own tables, per-row rules | `db`, `pluginDb(ctx)`, `sealed` | 14 |
+| people, roles, the sign-in wall | `roles`, `ctx.viewer`, `requires: "account"` | 13 |
+| realtime to an audience | `channel`, `usePluginRealtime` | 15 |
+| the person's account at Google, Microsoft, any OAuth 2.0 provider, or an API key — the secret never in your code | `credentials` slot (`family: google \| oauth2 \| apiKey`), `credentials(ctx).slot(n).fetch`, `useCredential`, `<ConnectAccount/>` (`accounts.md`) | 08 |
+| billed model calls | `llm` block, `llm(ctx)` / `ctx.llm` (never a model SDK) | 19 |
+| files and Drive, lists of files with progress | `filesForOp`, `files.transfer`, `useTransfer`, `ctx.files` | 09 |
+| a question in the platform's questions bell | `questions(ctx).ask / settle` | 06 |
+| opened at a place inside the app (tasks pane, chips, recall) | `useAppNav` | 05 |
+| another app's tools and state | `workspaceTools` grants, `callWorkspaceTool`, `readAppState` (only inside an op, route, task or webhook; another type needs a grant) | 06 |
+| a network run waits for mail | `mailWaitDirective` | 04 |
+| a service / commands on the person's computers | `device` block, `devices(ctx)`, `<ConnectComputer/>`, `esoul-device` | 18, 20 |
+| images, films, fonts | `put_app_asset`, `assetUrl` | `assets.md` |
+| testing worlds | `esoul-sdk/testing`: `memoryDb`, `memoryFiles`, `scriptedModel`, `simGmail`, `fakeCredentials`, `startMockOAuth` | 10 |
+
+Limits to say rather than build around: one credential slot per app; an `oauth2` / `apiKey`
+account cannot be connected inside a Forge box (only the installed app reaches a real account —
+`accounts.md` §5); a computer connects only to an installed app (`computers.md`).
+
+## Progress from the first minute (the owner's rule, 2026-09-29)
+
+The person must NEVER look at an empty Forge. The moment they ask for an app — before you ask a
+question, before `open_workbench` — call **`set_build_plan {pluginId, name, goal, steps}`**: the
+goal in their words and 4–10 steps a person understands ("Draw the list screen", "Remember items
+after a refresh", "Check it on a phone"), each with an honest `estMin`. The Forge shows it in
+place of the preview — a checklist, a progress ring, "about N minutes left" (it learns your pace
+from the steps you finish) — and the box's own address shows it too. It is read-only to them;
+only you move it:
+
+- `update_build_step {stepId, status:"doing"}` when you start a step (the one in progress
+  becomes done), `"done"` the moment it is, `"skipped"` if it proved unnecessary, `detail` for a
+  one-line note. Never batch these at the end — the countdown is only honest if it moves.
+- Re-plan with `set_build_plan` when the plan changes; finished steps stay at the top.
+- `update_build_step {reveal:true}` when the app's first real screen works — then the person
+  sees the app. Until then they may "Peek at it now"; a plan that goes quiet for 20 minutes
+  steps aside on its own, so never leave one half-moved.
+- On later rounds (a change after install), set a short plan again: the person sees what you are
+  doing and roughly how long, every time.
 
 ## The flow: idea → app (details in `idea-to-app.md`)
 
@@ -95,7 +149,7 @@ differ by a version — for an app that is open in a box, the box's copy is the 
    nobody is looking, what it touches outside (Drive, their computer, an API, another app).
 2. **Shape** — decide where each thing lives: shared-and-small → **the fold** (events);
    per-person / unbounded / must-not-scrub → **tables** (`db`); heavy compute → **their
-   computer**; live view → **route**; durable work → **task**. Write the manifest first: it IS
+   computer** (a program or commands, `computers.md`); live view → **route**; durable work → **task**. Write the manifest first: it IS
    the design, and the person reads it at install.
 3. **Open** the workbench, read the scaffold, then write in this order: `plugin.json` +
    `ops.ts` + `server.ts` in ONE round (a manifest naming ops the server lacks is refused),
@@ -114,9 +168,18 @@ differ by a version — for an app that is open in a box, the box's copy is the 
    says **Live** (about seven minutes: checks → tables → the build → registering tasks → theirs).
    Then `create_app(application_type="plugin_<id>", name=…)` puts it on a workspace — its tools
    are live in chat, voice, agents and MCP. No pull request, no review queue, no GitHub.
+   **Continuous development**: change the app in the box, then `install_app` again — it UPDATES in
+   place (tables grow additively; data stays). The status line says step · time so far · time left.
+   An install that stopped half-way is **resumed** (the same Install), a dead one is cleared by
+   pressing it again after ~10 min of silence, and someone else's push landing mid-build is waited
+   out, never reverted. The app is PRIVATE: it shows in Add an app only for the person who
+   installed it; instances in workspaces they share keep working for everyone there. Pick a
+   distinctive `pluginId` — an id already used by another person's app is refused.
 
 ## The loop, tool by tool
 
+0. `set_build_plan {pluginId, name, goal, steps}` — FIRST, always (above). It works before the
+   box exists; the box's opening shows under it as a live line ("Installing the app host…").
 1. `open_workbench {pluginId, name, description, icon}` — `pluginId` lower-case with dashes;
    `icon` a lucide name (the tool lists the allowed ones when yours is wrong). The first box
    takes about a minute (npm install); later ones fork a warm base in seconds. Reopening
@@ -193,6 +256,21 @@ never the path to an app.
   cannot look a person up: capture the address while there IS a viewer, put what the task will
   need on the row it will act on, send through the workspace's email app under a `workspaceTools`
   grant, and record the send as an event (`telling-people-later.md`).
+- **A click shows its result at once.** What a person does is an event (`dispatch` — the fold
+  shows it now, the platform delivers it durably). Work that needs the server goes through
+  `runOptimistic` (`esoul-sdk/react`): apply now, send, and on failure the screen reverts and the
+  platform's banner names it with Try again. No spinner-then-result for the person's own action,
+  and never a banner of your own (`docs/05-ui.md`).
+- **What the assistant changes shows on screen.** Chat, voice, a task or another device can
+  change the app while it is open. State re-renders itself; anything read through an op does not.
+  Every op-backed view reloads quietly when the fold moves (a `FoldTick` at the root, one effect
+  in your op hook — `docs/05-ui.md`). Check it: open the preview, call a write tool from the
+  board, and see the view change without a reload.
+- **The box's tables are a model of Postgres, not Postgres.** What passes in the box can fail
+  installed where the model is kinder: test every list read past one page (> 200 rows) and on
+  tied orders, page with `cursor` alone (never `skip` with it), and run every long op (seed,
+  import, bulk write) twice in a test — installed it is 10–30× slower and can stop half-way
+  (`docs/14-database.md` → Testing).
 - **Missing ≠ empty**: `getStateDescription` uses `incompleteStateNotice`.
 - **Native and responsive**: root fills the frame, warm-sepia light / translucent dark,
   opaque popovers in dark, tap-to-act, a 390 px phone shot with no horizontal scroll.

@@ -14,6 +14,7 @@ asked to look, and the evidence is what you report.
 | server truth | `call_app_tool` on an op tool; `run_in_app {cmd:"curl …"}` for a route | ops answer over the preview's fold / tables with your rules; routes stream | a real database, real auth |
 | durable work | `call_app_tool` on the kicking tool → `read_app_state` → the frame's realtime | the task runs in-process, dispatches, notifies | durability, replay barriers, cadences |
 | people | `look_at_app` / `drive_app` with `viewer: "visitor-b"` etc.; `memoryDb` + `fakeViewer` + `runOp` in tests | visitor-b sees 0 of visitor-a's rows; the sign-in wall appears where declared | production's real identities |
+| scale | a test that seeds > 200 rows and reads them back; a long op run twice | paging, ties, a re-run or half-finished op — the box's tables are a model of Postgres and forgive these | Postgres itself |
 | contract | `test_app` (seconds) | the fold contract, ops, the task with a fake ctx, the helper compiles | types (local jest is `isolatedModules`) |
 | the bar | `check_app` (minutes) | registry sync, the import wall, your tests + the platform's boundary/crash-safety suites, `tsc`, the thin-preview walk | — |
 
