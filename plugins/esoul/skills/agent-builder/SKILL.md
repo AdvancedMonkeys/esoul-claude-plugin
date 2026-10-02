@@ -60,7 +60,7 @@ never breaks them. Take exact names from `get_app_tools`; never guess.
 7. **Start it** (`start_agent_network_`) only when the person wants it to act on its own. A
    trigger fires only on events AFTER the start. To see it fire on mail, send the inbox an email
    from Gmail itself (another address, or the same account from gmail.com) — NOT with the Gmail
-   app's `send_email_`: what the app sends it records as sent, and that never counts as new mail.
+   app's `send_email_Gmail`: what the app sends it records as sent, and that never counts as new mail.
    A started network stays editable: change it with `set_agent_network_` while it listens — the
    trigger stays armed and the next event uses the new version.
 8. **Report** what it will do, on what, with which model, what a run cost (a sorter on Haiku plus
