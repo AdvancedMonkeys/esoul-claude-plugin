@@ -183,8 +183,10 @@ only you move it:
 1. `open_workbench {pluginId, name, description, icon}` — `pluginId` lower-case with dashes;
    `icon` a lucide name (the tool lists the allowed ones when yours is wrong). The first box
    takes about a minute (npm install); later ones fork a warm base in seconds. Reopening
-   resumes. Answers with what the box can do (`tasks, ops, routes, realtime, viewer, db`) — if
-   that line is missing, `close_workbench` and open again. Every checkpoint you make is SAVED by
+   resumes, and brings an older box's esoul-sdk up to date when nothing runs in it (the answer
+   says what changed; `update_box` when it says the box was busy). Answers with what the box can
+   do (`tasks, ops, routes, realtime, viewer, db`) — if that line is missing, `close_workbench`
+   and open again. Every checkpoint you make is SAVED by
    the platform (the board's Saved row: v12 · 2 min ago); `restore_app` goes back to any of them.
 2. `orient_app` (an app you did not write this conversation) or `list_app_files` +
    `read_app_file {pluginId, path, from?, lines?}`. `search_app_files {query, glob?, regex?,

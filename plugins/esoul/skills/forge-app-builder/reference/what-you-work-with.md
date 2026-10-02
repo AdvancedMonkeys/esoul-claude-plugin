@@ -28,7 +28,8 @@ The **board tools**: `set_build_plan`, `update_build_step`, `open_workbench`, `c
 `call_app_tool`, `read_app_state`, `test_app`, `check_app`, `run_in_app`, `app_problems`,
 `resolve_problem`, `commit_app`, `app_history`, `diff_app`, `restore_app`, `put_app_asset`,
 `remove_app_asset`, `install_app` (`status:true` follows it), `uninstall_app` (a dry run unless
-`confirm`), and the platform owner's `ship_app`, `merge_app`, `add_forge_task`.
+`confirm`), `update_box` (the box's esoul-sdk / app host up to the platform's versions — below),
+and the platform owner's `ship_app`, `merge_app`, `add_forge_task`.
 (The same handler serves the Python SDK's `esoul.forge` and the `esoul-mcp` server's `forge_*`
 tools for people on a Personal Access Token; the verbs and answers are the same.)
 
@@ -123,6 +124,16 @@ restarts). A read that cannot happen (no preview) says nothing rather than "clea
 | the box | idles out 10 min after the last touch; `check_app` takes minutes; the first `open_workbench` on a board takes minutes; a production deploy after a merge 7–10 min |
 
 ## 7. What things cost the person
+
+**The box's SDK version.** A box keeps the esoul-sdk and app host it was made with. Opening it
+(`open_workbench`) upgrades the pair when nothing runs in it — the app's checks run before and
+after, and the box is PUT BACK if a check that passed now fails — and the open's answer says so,
+with what is new in the SDK. If it says "not upgraded now because the preview is running", or you
+need something the SDK's CHANGELOG lists as new, call `update_box` (stops the preview; a few
+minutes). A rollback names the checks that broke: fix the app on the new versions with
+`update_box {acceptBroken: true}`, or leave it on the old ones and say why. While an upgrade runs,
+edits and checks answer `upgrading` — wait a minute. The board's pill shows `SDK 0.25.0` or
+`SDK 0.24.0 → 0.25.0` with an Update button.
 
 A running box is billed by the minute — close it when done (`close_workbench`; it idles out
 anyway). `generateAppImage` and every model call an app makes spend the OWNER's credits — keep
