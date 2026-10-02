@@ -125,15 +125,20 @@ restarts). A read that cannot happen (no preview) says nothing rather than "clea
 
 ## 7. What things cost the person
 
-**The box's SDK version.** A box keeps the esoul-sdk and app host it was made with. Opening it
-(`open_workbench`) upgrades the pair when nothing runs in it — the app's checks run before and
-after, and the box is PUT BACK if a check that passed now fails — and the open's answer says so,
-with what is new in the SDK. If it says "not upgraded now because the preview is running", or you
-need something the SDK's CHANGELOG lists as new, call `update_box` (stops the preview; a few
-minutes). A rollback names the checks that broke: fix the app on the new versions with
-`update_box {acceptBroken: true}`, or leave it on the old ones and say why. While an upgrade runs,
-edits and checks answer `upgrading` — wait a minute. The board's pill shows `SDK 0.25.0` or
-`SDK 0.24.0 → 0.25.0` with an Update button.
+**The box's SDK version.** A box keeps the esoul-sdk and app host it was made with; opening it
+never upgrades it. When a newer pair is out, `open_workbench`'s answer says so — the versions, what
+is new, and whether it is COMPATIBLE or BREAKING (the version says: a breaking release moves the
+leftmost non-zero number, 0.25.x → 0.26.0, and lists each changed API). Ask the person whether to
+update; do not update on your own. Compatible: `update_box` (stops the preview; a few minutes; the
+app's checks run before and after and the box is PUT BACK if a passing check fails — then fix the
+app on the new versions with `update_box {acceptBroken: true}`, or leave it and say why).
+Breaking: call `update_box` once — it changes nothing and answers `needs_review` with each change
+and the places in this app that use it (a text search; the checks after the update are the full
+list). Read those places, tell the person in plain words what will change in their app, and only
+when they agree call `update_box {reviewedBreaking: true}`: the new versions stay even if checks turn
+red — change each place, then `check_app` until green. While an upgrade runs, edits and checks answer
+`upgrading` — wait a minute. The board shows the same offer as a notice (Update / Update with the
+agent / Not now); "Update with the agent" puts the request in your chat.
 
 A running box is billed by the minute — close it when done (`close_workbench`; it idles out
 anyway). `generateAppImage` and every model call an app makes spend the OWNER's credits — keep
