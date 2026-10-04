@@ -1,6 +1,6 @@
 ---
 name: cad
-description: Model, assemble and print-prepare real parts in the ExternalSoul CAD app (plugin_cad, a chili3d kernel) from chat or MCP — bring a person's existing parts in from Onshape or any CAD site through their cloud browser (STEP export → workspace file → cad_import), place them by the source assembly's own mates, design NEW parts around them (mounts, housings, hats, caps) as separate bodies with real screw holes and clearances, replicate a bought component from its datasheet drawing, measure every fit (esoul.measure: distance + interference, never a boolean), build on the server with no tab open, show an exploded view through a variable, and export each printable part by name. Triggers on "import this CAD / STEP file", "put these parts in the drawing", "design a mount / housing / hat for it", "exploded view", "does it fit", "export for printing", "download the parts from Onshape".
+description: Model, assemble and print-prepare real parts in the ExternalSoul CAD app (plugin_cad, a chili3d kernel) from chat or MCP — bring a person's existing parts in from Onshape or any CAD site through their cloud browser (STEP export → workspace file → cad_import), place them by the source assembly's own mates, design NEW parts around them (mounts, housings, hats, caps) as separate bodies with real screw holes and clearances, replicate a bought component from its datasheet drawing, read a part's holes and planes from the kernel (cad_describe) before designing to it, measure every fit (esoul.measure: distance + interference, never a boolean), build on the server with no tab open, show an exploded view through a variable, and export each printable part by name. Triggers on "import this CAD / STEP file", "put these parts in the drawing", "design a mount / housing / hat for it", "exploded view", "does it fit", "export for printing", "download the parts from Onshape".
 ---
 
 # CAD in ExternalSoul: parts in, design around them, parts out
@@ -51,13 +51,14 @@ Any other CAD site works the same way: its export endpoint in a `browser_run_scr
 
 - `cad_import_<Name> { fileId, fileName, name, color, label }` — one step, the body is
   `node:<stepId>:part`. Nothing is built until `cad_build` or an open tab replays.
-- Measure it before touching it: `cad_build` reports every body's world bbox + volume. For the
-  geometry that matters (which end is open, where the holes are) ask the kernel instead of guessing:
-  `cad_request { kind:"query", method:"run_program", args:{ ops:[ { method:"shape.findSubShapes", target:"<node>", id:"f", args:{ subshapeType:"face" } } ] } }`
-  then `shape.boundingBox` + `face.area` per `f#i` (batches of 40): a small round face with
-  dx≈dy is a hole, its bbox centre the hole's position, its z range the plate it goes through.
-  Thin slabs (`extrude` of a Ø100 circle, 0.4 mm) measured against the part with
-  `esoul.measure` give an area-vs-z profile — the cheapest way to see walls, lips and open ends.
+- READ it before touching it: `cad_describe_<Name> { nodes:["<stepId>:part"] }` answers the
+  body's bbox and volume and every HOLE (radius, axis, centre, length — its angle about the
+  part's axis is `atan2(centre.y, centre.x)`), BOSS and PLANE (normal, point, area), from the
+  kernel. Design to those numbers, never to a screenshot: a lid's push buttons were put at 37.5°
+  from a picture; the kernel said 281.5°–334°, and two windows had been cut in the wrong place.
+  `cad_build` reports every body's world bbox + volume; a thin slab (`extrude` of a Ø100 circle,
+  0.4 mm) measured against the part with `esoul.measure` gives an area-vs-z profile when a wall's
+  thickness or an open end matters.
 - The person's parts are DONE. Never cut, fuse or fillet them. Everything you design is a new
   body that attaches to them through THEIR holes and faces.
 
@@ -72,8 +73,16 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
 ## 4. Design the new parts as a specialist would
 
 - Every part is its OWN body (a colour belongs to a body; a print is a body). Split a part's
-  program across steps when a `call_app_tool` input would pass ~2 KB; a later step cuts/fuses into
-  `<earlier stepId>:<opId>`.
+  program into steps by what each IS (plate, underside, bosses, holes) so a failure names a
+  thing; a label is ≤ 240 chars; inputs of several KB arrive intact; a later step cuts/fuses
+  into `<earlier stepId>:<opId>`, and a body's explode transform is the LAST op of its steps.
+- Print it in your head while modelling: the part prints on its flattest face; nothing bridges
+  more than ~12 mm (a stand-off under a plate is a LATTICE of rings + ribs with wire corridors,
+  never a plate on three islands); no support may touch a visible face (a top hat prints
+  brim-down; a skirt with windows is its own ring clamped under the brim by the same screws);
+  a loose part a spring or a child could push out gets a captive flange; the shrink allowance
+  (0.3) goes on holes and pockets, never on outer dimensions; the print orientation and the
+  screw lengths are said in the labels or the notes.
 - Screws: through-holes Ø2.8 for M2.5 (Ø3.4 for M3), countersinks Ø5.5 × 1.5 on the head side,
   pilot holes Ø2.2 × 8 in bosses for self-tapping screws; bosses Ø7 on the overhang, placed at
   angles that miss everything beneath (legs, slots) — asymmetric angles make the fit keyed.
@@ -94,7 +103,7 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
 
 - Explode is a VARIABLE: `cad_set_variables [{ name:"explode", type:"length", expression:"0" }]`,
   and each part's last op is `{ op:"transform", id:"explode", node, translate:{ z:"explode * k" } }`
-  with k in assembly order (cup 1, lid 2, mount 3, switch 3.5, hat 4.6, band 5.2, cap 5.8 — at
+  with k in assembly order (cup 1, lid 2, mount 3, switch 3.5, skirt 4.2, hat 4.8, band 5.4, cap 6 — at
   explode=50 every gap ≥ 6 mm). `cad_set_variables explode=50` → `cad_build` → the picture.
 - `cad_build_<Name> { view:true }` builds on the server and attaches a full-size picture; a tab the
   person has open builds the same steps live. `force:true` re-records everything.
@@ -107,3 +116,5 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
 
 Nothing exists until a build report lists the body with its bbox. A FAILED step is named with the
 kernel's reason; fix the ops and build again. Say which holes you used and which gap you assumed.
+The person's open tab can hold an OLDER replay: before "fixing" a model from their screenshot,
+`cad_build` and measure — a mount "without holes" was a stale tab, not a missing feature.
