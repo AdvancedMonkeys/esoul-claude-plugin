@@ -60,7 +60,13 @@ Any other CAD site works the same way: its export endpoint in a `browser_run_scr
   0.4 mm) measured against the part with `esoul.measure` gives an area-vs-z profile when a wall's
   thickness or an open end matters.
 - The person's parts are DONE. Never cut, fuse or fillet them. Everything you design is a new
-  body that attaches to them through THEIR holes and faces.
+  body that attaches to them through THEIR holes and faces. If a cut into an imported part is
+  ever asked for by name, prove it did something: `shape.volume` before and after — a "wire hole"
+  cut into a lid that was already open at its centre removed nothing and was still reported as a
+  feature.
+- To LOOK at the model from outside (a film, a check): `esoul.explode { factor, parts:[{node,k}] }`
+  slides the drawn bodies apart without touching the model; `esoul.camera { rotate:{dx,dy} | lookAt }`
+  drives the camera one render per call.
 
 ## 3. Place by the source assembly's mates, not by eye
 
