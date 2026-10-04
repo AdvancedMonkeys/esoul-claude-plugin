@@ -113,6 +113,11 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
   explode=50 every gap ≥ 6 mm). `cad_set_variables explode=50` → `cad_build` → the picture.
 - `cad_build_<Name> { view:true }` builds on the server and attaches a full-size picture; a tab the
   person has open builds the same steps live. `force:true` re-records everything.
+- A build that ends green also saves the model's GEOMETRY CACHE (one gzipped snapshot with every
+  finished shape, keyed by the steps' hash): the next open of the model, in any tab or on the
+  server, loads it in a second or two instead of rebuilding every step. It is stale by construction
+  after a removed step, a changed variable or a hand edit, and a `cad_build` renews it — so when
+  you are done with a round of steps, end with one `cad_build`; the person's next refresh is fast.
 - Export each printable part by name: `cad_request { kind:"export", args:{ format:".stl", ids:["<node>"], name:"Switch mount" } }`
   (formats `.step .iges .brep .stl ".stl binary" .ply .obj`); the next `cad_build` or tab answers
   it as a workspace file named after the part (`cad_read_answer` → fileId). No `ids` = the whole
