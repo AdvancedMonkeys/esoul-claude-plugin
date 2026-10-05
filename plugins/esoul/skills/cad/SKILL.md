@@ -6,8 +6,9 @@ description: Model, assemble and print-prepare real parts in the ExternalSoul CA
 # CAD in ExternalSoul: parts in, design around them, parts out
 
 A CAD app on a workspace (`plugin_cad`, usually named by the person — find it with `list_workspaces` /
-`get_app_tools(<app id>)`; its tools are minted `cad_<verb>_<Name>`) holds a MODEL as a timeline of
-STEPS: parametric programs (sketch → extrude/revolve → boolean/fillet/transform/style), imports of
+`get_app_tools(<app id>)`; its tools are minted `cad_<verb>_<Name>`; none yet → `create_app`
+with `application_type: "plugin_cad"` and the model's name, in the workspace the parts belong to)
+holds a MODEL as a timeline of STEPS: parametric programs (sketch → extrude/revolve → boolean/fillet/transform/style), imports of
 workspace CAD files, and a person's by-hand edits. Every step is an event; the server replays them
 in a headless kernel on `cad_build`, so nothing needs a tab. Read `cad_help_<Name>` once per
 session for the op shapes — this skill is about the WORKFLOW a CAD specialist expects.

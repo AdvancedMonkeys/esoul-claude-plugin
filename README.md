@@ -41,6 +41,7 @@ connection reaches every project and workspace on your account.
 | `block-notes` | Pages in folders — read, write, append, search, illustrate; the knowledge and documentation surface agents write into |
 | `slideshow` | Slides as live TSX on a 1280×720 canvas, edited by find/replace and judged by a vision critic; themes bundled |
 | `browser-use` | Drive your cloud browser — logged-in sites, forms, web editors, batch downloads — and know whether it actually worked |
+| `cad` | Real parts in the CAD app: bring your existing parts in (Onshape through your cloud browser, or any STEP file), place them by the source mates, design mounts, housings and caps around them with measured fits, an exploded view, and each printable part exported by name |
 
 ## Requirements
 
