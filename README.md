@@ -48,6 +48,13 @@ connection reaches every project and workspace on your account.
 An ExternalSoul account. Nothing installed locally — the server is hosted, and
 Claude Code handles the OAuth flow, token storage and refresh.
 
+Two of the apps the skills drive are turned on per account for now: the Gmail
+app (`email-campaign`, the mail parts of `agent-recipes`) and the CAD app
+(`cad`). If `create_app` says the type is not available to your account, ask
+ExternalSoul to enable it — the other apps (notes, slides, the browser, the
+sandbox, the Forge, agents, the site, the study, the monitor) are open to every
+account.
+
 Prefer to run it yourself, or using another client? The same tools ship as a
 local server in the [`esoul` Python SDK](https://pypi.org/project/esoul/):
 `pip install "esoul[mcp]"`, then `esoul-mcp`.
