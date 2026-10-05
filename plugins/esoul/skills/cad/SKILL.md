@@ -10,7 +10,12 @@ A CAD app on a workspace (`plugin_cad`, usually named by the person — find it 
 with `application_type: "plugin_cad"` and the model's name, in the workspace the parts belong to)
 holds a MODEL as a timeline of STEPS: parametric programs (sketch → extrude/revolve → boolean/fillet/transform/style), imports of
 workspace CAD files, and a person's by-hand edits. Every step is an event; the server replays them
-in a headless kernel on `cad_build`, so nothing needs a tab. Read `cad_help_<Name>` once per
+in a headless kernel on `cad_build`, so nothing needs a tab. A by-hand edit (a move, a feature's
+depth, a rename in the chili UI) is recorded as a DELTA of what the gesture changed, kept by the
+platform's log even with no network and merged per part when two devices edit at once
+(`cad_read_model` shows it as `changed: node:<id>.<property>`; a clash between two devices is
+reported as "edit(s) landed in two places" — the person decides in the app, never overwrite it with
+a program step on the same part without asking). Read `cad_help_<Name>` once per
 session for the op shapes — this skill is about the WORKFLOW a CAD specialist expects.
 
 ## 1. Bring the person's parts into the workspace (Onshape, through their cloud browser)
