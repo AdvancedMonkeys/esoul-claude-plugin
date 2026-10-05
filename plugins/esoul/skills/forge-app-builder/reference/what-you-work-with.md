@@ -29,7 +29,7 @@ The **board tools**: `set_build_plan`, `update_build_step`, `open_workbench`, `c
 `resolve_problem`, `commit_app`, `app_history`, `diff_app`, `restore_app`, `put_app_asset`,
 `remove_app_asset`, `install_app` (`status:true` follows it), `uninstall_app` (a dry run unless
 `confirm`), `update_box` (the box's esoul-sdk / app host up to the platform's versions — below),
-and the platform owner's `ship_app`, `merge_app`, `add_forge_task`.
+and the platform owner's `ship_app`, `merge_app`.
 (The same handler serves the Python SDK's `esoul.forge` and the `esoul-mcp` server's `forge_*`
 tools for people on a Personal Access Token; the verbs and answers are the same.)
 
@@ -143,7 +143,7 @@ agent / Not now); "Update with the agent" puts the request in your chat.
 A running box is billed by the minute; it sleeps by itself after 20 minutes unused and is put away
 (saved, then deleted) after 2 days — any tool call brings it back, so never keep a box busy to
 "keep it alive", and `close_workbench` when the person is done for now. What is saved to git: the
-app's folder (≤ 400 files, ≤ 8 MB) and the box's data (≤ 25 MB compressed: tables, events, runs,
+app's folder (≤ 400 files, ≤ 50 MB) and the box's data (≤ 25 MB compressed: tables, events, runs,
 roles, the simulated mailbox, the scripted model). Over either limit the board says `⚠ NOT SAVED TO
 GIT` — act on it the same turn (media out via `put_app_asset`, unused files deleted, test rows
 trimmed); until then the box keeps a snapshot and cannot be put away. `generateAppImage` and every model call an app makes spend the OWNER's credits — keep

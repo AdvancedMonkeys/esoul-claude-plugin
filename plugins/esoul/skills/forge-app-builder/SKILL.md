@@ -234,14 +234,16 @@ only you move it:
     copy, then deleted) after 2 days; ANY workbench tool brings it back on its own — resumed in
     seconds, or rebuilt from the saved copy in about a minute, files, versions and the preview's
     data included. Never open_workbench again just because time passed; just call the next tool.
-    If the board shows `⚠ NOT SAVED TO GIT` (the app's folder over 400 files / 8 MB, or the preview's
+    `workbench_status` only ASKS — on a sleeping box it answers from the board (box: asleep /
+    put_away) and leaves it asleep. A task the app runs keeps its box awake while it runs (up to an
+    hour); a person's clicks in the preview count as use, the app's own timers do not.
+    If the board shows `⚠ NOT SAVED TO GIT` (the app's folder over 400 files / 50 MB, or the preview's
     data over 25 MB compressed), the box cannot pause to git: tell the person in one line and fix it
     — move big media out with put_app_asset, delete unused files, trim bulk test rows; seed data the
     app always needs goes in a file of the app loaded by an op. The line clears at the next good save.
 
 `ship_app` / `merge_app` are the platform owner's, for a box that is a clone of the platform; a
-plain box refuses them. `add_forge_task` changes esoul ITSELF and is the platform owner's too —
-never the path to an app.
+plain box refuses them.
 
 ## The non-negotiables (each earned by a real failure — `app-anatomy.md`, `design-rules.md`)
 
