@@ -113,12 +113,16 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
 
 ## 5. Exploded view, pictures, exports
 
+- Variable types are chili's own words: `length` (mm), `angle` (degrees), `unitless` — any other
+  word (`number`) fails EVERY build until the table is replaced.
 - Explode is a VARIABLE: `cad_set_variables [{ name:"explode", type:"length", expression:"0" }]`,
   and each part's last op is `{ op:"transform", id:"explode", node, translate:{ z:"explode * k" } }`
   with k in assembly order (cup 1, lid 2, mount 3, switch 3.5, skirt 4.2, hat 4.8, band 5.4, cap 6 — at
   explode=50 every gap ≥ 6 mm). `cad_set_variables explode=50` → `cad_build` → the picture.
 - `cad_build_<Name> { view:true }` builds on the server and attaches a full-size picture; a tab the
-  person has open builds the same steps live. `force:true` re-records everything.
+  person has open builds the same steps live. `force:true` rebuilds every step FROM SCRATCH, ignoring
+  the geometry cache, and re-records it: the cache is keyed by the steps, so after a runtime fix the
+  same steps build differently and the cache cannot know — force is the one way to purge it.
 - A build that ends green also saves the model's GEOMETRY CACHE (one gzipped snapshot with every
   finished shape, keyed by the steps' hash): the next open of the model, in any tab or on the
   server, loads it in a second or two instead of rebuilding every step. It is stale by construction
@@ -133,5 +137,12 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
 
 Nothing exists until a build report lists the body with its bbox. A FAILED step is named with the
 kernel's reason; fix the ops and build again. Say which holes you used and which gap you assumed.
+A `cad_request` (query, view, export) is answered by the person's OPEN TAB first — a camera query
+(`esoul.camera`) moves THEIR view and a view capture is THEIR screen; use them knowingly, and prefer
+`cad_build` (the server answers every open request on its own kernel) for a close-up the person
+did not ask to see. A grey disc or plane floating beside a part is a cutter's SKETCH (runtime 39
+hides them; an older cache may still hold one — `cad_build { force:true }` rebuilds it); read
+`cad_read_model` before blaming the geometry.
+
 The person's open tab can hold an OLDER replay: before "fixing" a model from their screenshot,
 `cad_build` and measure — a mount "without holes" was a stale tab, not a missing feature.

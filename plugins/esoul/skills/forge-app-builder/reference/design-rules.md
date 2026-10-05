@@ -65,6 +65,19 @@ brief and purposeful; respect reduced-motion.
   emitting the same event — and the UI reflects an agent's event exactly as it reflects a tap.
 - **Read-only viewers exist** (public shares, invited readers). Gate every write on
   `useAppCanEdit()`; never hide data behind an edit affordance.
+- **Nothing a person did is lost, on any network.** An edit is an EVENT that carries what changed
+  (a delta, a patch), never a file the app must upload first — the platform's log keeps it offline
+  (IndexedDB spill across a reload) and delivers it in order when the link returns. Two devices:
+  declare `merge: { item, scope }` on the event (scope = the sub-items it touches, so edits of
+  different parts never conflict) and, for a patch-shaped event, `resolveConcurrent` (SDK 0.25.2)
+  to merge the same part per field and clash only on what truly collided — pure, run on every
+  device and the server, symmetric (a property test over random pairs finds the ordering holes).
+  Derived records (a captured picture, a cache) carry `conflictPolicy: "silent"`: two tabs writing
+  one derived thing is not a conflict. Compose at the data level where you can (operations on
+  items by id, not whole-list sets): a server-origin write (an agent's tool) is invisible to the
+  fence, so only composable operations survive it. Drive both devices before calling it done
+  (the harness `two-devices` pattern; `cad-sync` is the worked example) — the glue between
+  layers is what unit tests cannot see.
 - **Apps store knowledge.** `getStateDescription` is how agents perceive the app — write it as a
   compact, truthful brief with ids, never a dump, never a claim about what did not load.
 
@@ -83,3 +96,4 @@ brief and purposeful; respect reduced-motion.
 - [ ] `getStateDescription` uses `incompleteStateNotice`; `reconstructStateFromEventLog: true`.
 - [ ] Tests cover the fold contract; `check_app` green (no `skipped`).
 - [ ] `plugin.json` lists every op and every cross-app grant, and nothing more.
+- [ ] Edits are deltas in events (no upload first); `merge.item/scope` per sub-item; `resolveConcurrent` on patch events; derived records `conflictPolicy: "silent"`; a two-device drive passed.
