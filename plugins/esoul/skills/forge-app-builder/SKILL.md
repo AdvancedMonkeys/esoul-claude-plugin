@@ -230,7 +230,14 @@ only you move it:
 11. `install_app {pluginId}` → the install starts (or an UPDATE, when the app is already
     installed); `install_app {pluginId, status:true}` follows it step by step until **Live**, when
     the app is in the person's Add an app. `close_workbench` when done — a running box costs
-    money; it idles out after 10 minutes anyway and reopening resumes.
+    money. It sleeps by itself after 20 minutes unused and is put away (saved to the platform's
+    copy, then deleted) after 2 days; ANY workbench tool brings it back on its own — resumed in
+    seconds, or rebuilt from the saved copy in about a minute, files, versions and the preview's
+    data included. Never open_workbench again just because time passed; just call the next tool.
+    If the board shows `⚠ NOT SAVED TO GIT` (the app's folder over 400 files / 8 MB, or the preview's
+    data over 25 MB compressed), the box cannot pause to git: tell the person in one line and fix it
+    — move big media out with put_app_asset, delete unused files, trim bulk test rows; seed data the
+    app always needs goes in a file of the app loaded by an op. The line clears at the next good save.
 
 `ship_app` / `merge_app` are the platform owner's, for a box that is a clone of the platform; a
 plain box refuses them. `add_forge_task` changes esoul ITSELF and is the platform owner's too —

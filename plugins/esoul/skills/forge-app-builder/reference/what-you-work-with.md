@@ -121,7 +121,7 @@ restarts). A read that cannot happen (no preview) says nothing rather than "clea
 | a device program | `send` waits ≤ 55 s; ≤ 1 MB JSON each way; a queued message expires in 600 s; `p.op` resent after ~4 s (make ops idempotent); the program ≤ 2 MB / 200 files, Node built-ins only |
 | files | `read` cap 25 MB (100 MB ceiling); `readMany` ≤ 200 refs; `listAll` max 20,000; a read grant 1 h default, 24 h max; a route token ≤ 30 days |
 | tool output to a model | keep answers short; a picture reaches a chat only as a URL — never base64 in text |
-| the box | idles out 10 min after the last touch; `check_app` takes minutes; the first `open_workbench` on a board takes minutes; a production deploy after a merge 7–10 min |
+| the box | sleeps after 20 min unused (wakes in seconds on the next tool call); put away after 2 days (the next tool call rebuilds it from the saved copy, ~1 min); `check_app` takes minutes; the first `open_workbench` on a board takes minutes; a production deploy after a merge 7–10 min |
 
 ## 7. What things cost the person
 
@@ -140,8 +140,13 @@ red — change each place, then `check_app` until green. While an upgrade runs, 
 `upgrading` — wait a minute. The board shows the same offer as a notice (Update / Update with the
 agent / Not now); "Update with the agent" puts the request in your chat.
 
-A running box is billed by the minute — close it when done (`close_workbench`; it idles out
-anyway). `generateAppImage` and every model call an app makes spend the OWNER's credits — keep
+A running box is billed by the minute; it sleeps by itself after 20 minutes unused and is put away
+(saved, then deleted) after 2 days — any tool call brings it back, so never keep a box busy to
+"keep it alive", and `close_workbench` when the person is done for now. What is saved to git: the
+app's folder (≤ 400 files, ≤ 8 MB) and the box's data (≤ 25 MB compressed: tables, events, runs,
+roles, the simulated mailbox, the scripted model). Over either limit the board says `⚠ NOT SAVED TO
+GIT` — act on it the same turn (media out via `put_app_asset`, unused files deleted, test rows
+trimmed); until then the box keeps a snapshot and cannot be put away. `generateAppImage` and every model call an app makes spend the OWNER's credits — keep
 them behind owner-only ops. A task holds a concurrency slot while running (a parked wait does
 not). A `my_computer` command runs on their hardware and is **recorded on the workspace
 timeline** — never put a secret in one. A public door (`access: "public"`) is listed on the
