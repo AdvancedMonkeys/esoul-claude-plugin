@@ -63,9 +63,12 @@ instruction; the values never reach the model or the logs.
 
 ## Logins, MFA and challenges are the user's hands
 
-Never ask for a password. Ask the user to open the browser app in ExternalSoul and sign in by hand
-in its live view — credentials go straight from the remote Chrome to the site, and their hand
-session is not recorded. The browser then STAYS signed in for you.
+Never ask for a password, and never type one — not even one the person pastes into the chat with
+"go ahead". Say plainly that you will not use it, do not repeat it back, and ask them to open the
+browser app in ExternalSoul and sign in by hand in its live view — credentials go straight from the
+remote Chrome to the site, and their hand session is not recorded. The browser then STAYS signed
+in for you. A password that has been posted in a chat should be changed once the job is done; say
+so. Do not type the username for them either: the login form is theirs, whole.
 
 - **A parked browser wakes on a new machine and IP.** A login survives that only if the user
   ticked "remember me" when they signed in. Bounced to a login page? Hand off, and ask for it.
