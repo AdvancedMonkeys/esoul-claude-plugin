@@ -73,24 +73,41 @@ programs.
 ## 3. Writing a controller that actually works
 
 Anything that balances, holds a speed or drives to a place is FEEDBACK, and feedback has numbers in
-it. Do not guess them. Four readings decide every gain, and the app will tell you three:
+it. Do not guess them — **`describe_machine` measures them off the machine's own meshes** and prints
+them before you write a line:
 
-- **Mass, and how high the mass sits.** `describe_machine` gives the machine's total mass, each
-  link's mass and the height of the centre of mass above a wheel axis. A body whose mass sits `l`
-  above its wheels falls with a time constant of `sqrt(l/g)` — 43 mm gives 66 ms, and a loop that
-  corrects slower than that will never balance it.
-- **What the tyres can transmit, not what the motors can give.** Two wheels carrying `m` kilograms
-  transmit at most `mu*m*g*r` newton-metres before they slip, and `describe_machine` states it. A
-  motor limit is usually far higher. **A command above the grip limit does not give more push, it
-  gives less** — the wheel spins, the loop loses its authority and the machine settles into a fast
-  wobble. Cap the command below the grip figure and the wobble disappears.
+```
+mass 258 g total — base 192 g, its centre 42.9 mm above the wheelL/wheelR axis;
+wheelL 32.7 g; wheelR 32.7 g.
+  the whole machine's centre of mass is (0, 0, 64) mm in its own frame
+  wheelL/wheelR roll on base, radius 32 mm; the machine's centre of mass is
+  32 mm above that axis — the arm a balance law swings.
+  On a level floor the two wheels can transmit about 0.065 N·m between them
+  before they slip — a balance law that asks for more is not balancing.
+```
+
+Four readings decide every gain, and that one call gives you three of them:
+
+- **How high the mass sits, which is NOT the body's own centre.** The arm a balance law swings is
+  the whole machine's centre of mass above the wheel axis — 32 mm here, not the base's 42.9 mm,
+  because the wheels sit on the axis and pull the average down. It falls with a time constant of
+  `sqrt(l/g)`: 32 mm is 57 ms, and a loop that corrects slower than that will never catch it. Raise
+  the control rate before you raise a gain — `write_program { rate: 500 }` costs nothing.
+- **What the tyres can transmit, not what the motors can give.** The printed grip figure is usually
+  far below the motor limit (0.065 against 0.2 here). **A command above it does not give more push,
+  it gives less** — the wheel spins, the loop loses its authority, and the machine settles into a
+  fast wobble that looks like bad tuning and is not. Cap the command under the figure. A mass the
+  app could not compute (a mesh that is not a closed solid) is reported as UNKNOWN with the reason,
+  never guessed — measure it yourself before trusting a gain.
 - **Rates from the IMU, not from differencing an orientation.** `machine.sensor("imu").gyro` is the
   body's angular velocity now; a difference of `part.quat` is the same number a tick late, and a
   tick is most of the phase margin a fast loop has.
 - **Travel speed from the WHEELS, not from the body.** `part(id).velocity` is the velocity of that
-  link's CENTRE OF MASS. On anything that rocks, its own rocking is in that number (4 rad/s on a
-  43 mm arm is 0.17 m/s the machine is not travelling at) and feeding it back makes the machine
-  chase itself. Use `(joint rate + body rate) * wheel radius`, which is what a real robot reads.
+  link's CENTRE OF MASS — the PROGRAM API says so in the answer, because it is the trap that costs
+  the most. On anything that rocks, its own rocking is in that number (4 rad/s on a 32 mm arm is
+  0.13 m/s the machine is not travelling at) and feeding it back makes the machine chase itself. Use
+  `(joint rate + the body's own rate about that axis) * wheel radius`, which is what a real robot
+  reads. A joint's `.speed` is measured against its PARENT LINK, not the world — add the body rate.
 
 A balancing machine ends up as one line, with every gain positive and no modes:
 
@@ -121,10 +138,19 @@ shallow-looking round bump is steeper than it reads: a segment of radius `R` sta
 meets the wheel at about `sqrt(2h/R)` of slope — 12 mm on a 250 mm radius is 16°, three times the
 ramps around it. Build a convex bump out of two gentle ramps and a short flat top and the whole
 course stays inside what the machine can do. A `ramp`'s pose is its LOW edge: the top surface rises
-from there along +x to `h` over `l` (yaw 180° makes it fall that way instead).
+from there along +x to `h` over `l` (yaw 180° makes it fall that way instead) — `add_object` and
+`read_world` both answer with the span it actually occupies and which way it rises, so read the
+answer back rather than trusting the arithmetic you meant.
 
 **One machine, one program.** Two programs bound to the same machine write opposing torques to the
-same motors every tick. Pass `programs: [...]` to `run` and keep spare controllers unbound.
+same motors every tick. `run` and the view's Play now REFUSE that and name both programs; pass
+`programs: [...]` to pick one, and keep spare controllers unbound.
+
+**Say how long the world wants to run.** A person watching presses Play, and Play takes the world's
+own `set_settings { defaultRun }` (20 s if it is unset). A patrol whose round trip is 17 seconds,
+watched through a 20-second Play, reads as "it does not go back and forth" — the machine was right
+and the demonstration was cut in half. Set `defaultRun` to one natural cycle of whatever you built,
+and say so when you hand it over.
 
 When something will not stand up, measure before you tune: a short run that applies a known torque
 and logs the tilt, the wheel rate and the travel tells you in one call whether the wheels are

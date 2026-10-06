@@ -167,6 +167,13 @@ A collider warning in the export or the run ("no axis with a round cross-section
 collider — using the convex hull") means a body's shape could not be fitted to the primitive it
 looks like. It is usually harmless on decoration and never harmless on a wheel.
 
+**The model decides the machine's mass, so model the solid you mean.** RunMachine computes each
+body's mass from its mesh volume at 1000 kg/m³ unless the part says otherwise — a part drawn hollow
+weighs what a hollow part weighs, and a body that is not a closed solid gets no mass at all (its
+`describe_machine` line reads UNKNOWN with the reason). Anything that balances, drives or tips is
+sized off those numbers, so a decorative block left solid at the top of a model silently becomes
+ballast. Check the figures with `describe_machine` in RunMachine before tuning anything.
+
 ## Honesty
 
 Nothing exists until a build report lists the body with its bbox. A FAILED step is named with the
