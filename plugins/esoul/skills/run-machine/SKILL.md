@@ -1,73 +1,88 @@
 ---
 name: run-machine
-description: Simulate machines in the ExternalSoul RunMachine app (plugin_run_machine, MuJoCo physics) from chat or MCP — put balls, boxes, ramps, walls, a bucket or a catapult into a world; bring a machine from the CAD app as a package (parts from STL exports or primitives, joints with axes, motors, gears by teeth, sensors incl. a camera); write its program in JavaScript (motors, sensors, logs, world.stop); run it headless on the server and read the metrics, a picture and a film; iterate. Triggers on "simulate", "physics", "make it drive / throw / fall", "catapult", "does it roll", "run the machine", "film the run", "RunMachine".
+description: Simulate machines designed in the ExternalSoul CAD app inside the RunMachine app (plugin_run_machine, MuJoCo physics) from chat or MCP — bring a machine in from the CAD app in one call, write a small JavaScript program that drives its motors, run it headless and get metrics, a picture and a film; update the machine after the CAD model changes; drive several machines and obstacles in one world; script the camera for films.
 ---
 
 # RunMachine: a physics world for machines, driven by programs
 
 A RunMachine app on a workspace (`plugin_run_machine`; find it with `list_workspaces` / `get_app_tools(<app id>)`;
-its tools are minted `rm_<verb>_<Name>`; none yet → `create_app` with `application_type: "plugin_run_machine"`)
-holds a WORLD (objects, machines, metrics, settings), PROGRAMS and RUNS. Nothing moves until a run. The
-physics is MuJoCo in a browser page the platform drives headless, so `rm_run` works with nobody's tab open and
-answers in the same call with the metrics in words, the program's log and a picture; a person with the app open
-sees the same world and can press Play. Read `rm_help_<Name>` once per session for the exact shapes.
+its tools are minted `<verb>_<Name>` — `place_machine_RunMachine`, `run_RunMachine`…; none yet → `create_app` with
+`application_type: "plugin_run_machine"`) holds a WORLD (objects, machines, metrics, settings), PROGRAMS and RUNS.
+Nothing moves until a run. The physics is MuJoCo in a browser page the platform drives headless, so `run` works with
+nobody's tab open and answers in the same call with the metrics in words, the programs' logs and a picture; a person
+with the app open sees the same world and can press Play.
 
-Units: the world is METRES, kg (masses in grams in the tools), seconds; a machine package is MILLIMETRES (the
-CAD app's units). The floor is z = 0.
+**Read `read_world` first.** Its last line is `Next: …` — the one call that moves the work forward. Every answer
+names the next call. Units: metres, seconds, grams; programs speak degrees. The floor is z = 0.
 
 ## 1. The loop
 
-1. Build the world: `rm_add_object { preset }` (ball, box, ramp, wall, bucket, catapult) or a full object; `rm_place_machine { machine }` for a package.
-2. Say what to measure: `rm_set_metrics` — max_height / distance_from_start / max_speed of a body, joint_angle, inside a region, touched another body, time_to another metric. A run answers with these in words.
-3. Write the program: `rm_set_program { name, source }` — `function loop({ t, machine, world, log }) { … }`, called at 50 Hz (or `rate`).
-4. `rm_run { duration, film?: true }` — read the result; LOOK at the attached picture; `rm_film` for a better film; change; run again. Keep the first run short (3–5 s).
-5. Never describe a result without a run record. If a run fails, the reason names the program line or the body.
+1. `place_machine { cad: { nodeId: "<the CAD app's id>" } }` — the CAD app exports the model's mechanism (its
+   variable-driven rotations are the joints, the bodies they carry are the links, linear expressions between
+   variables are the gears) to `Machines/<name>/` and RunMachine places it resting on the floor. The answer is the
+   machine as a program sees it: motors with the call for each, sensors, joints, gears, parts, and a STARTER PROGRAM
+   written for its own motors. `from: "Machines/<name>"` places an export already in the workspace; `pos: [x, y]`,
+   `yaw` place it; placing the same machine again updates it in place.
+2. `describe_machine { id }` any time you need that text again (it also says when the CAD model changed since).
+3. `write_program { machine, name, source }` — `function loop({ t, machine, world, camera, log }) { … }` at 50 Hz.
+   It is checked against the machine as it is saved: a motor it names that does not exist comes back here, not from
+   a run. `machine: "*"` makes a WORLD program that reaches every machine as `machines["id"]`.
+4. `run { film: true }` (20 s by default; a program ends it earlier with `world.stop`). Read the metrics, LOOK at
+   the picture; `film { runId, quality: "share" }` for a better film; change; run again. Never describe a result
+   without a run record; a failed run names the program line or the body.
+5. The model changed in CAD? `update_machine { id }` exports again, takes the new geometry and keeps the pose,
+   motors, sensors, colliders and programs set here — the answer lists what changed, what stayed and what needs
+   attention (a motor whose joint is gone). `check` / `read_world` say "CAD changed" per machine.
 
-## 2. Programs (JavaScript, sandboxed)
+Obstacles and props: `add_object { preset: "ball" | "box" | "ramp" | "wall" | "bucket" | "catapult" }` (metres,
+grams; `fixed: true` objects are part of the world). `set_metrics` says what every run answers with: max_height /
+distance_from_start / max_speed of a body, joint_angle, inside a region, touched another body, time_to a metric.
+`remove { kind, id }` takes anything out.
+
+## 2. Programs (JavaScript, sandboxed, deterministic)
 
 ```js
 function setup({ machine }) { /* once */ }
-function loop({ t, dt, machine, machines, world, log, random }) {
-  machine.motor("drive").speed(20);            // velocity motor, rad/s (negative = the other way)
+function loop({ t, dt, machine, machines, world, camera, log, random }) {
+  machine.motor("drive").speed(20);            // velocity motor, rad/s (gear -1 on the motor = the other way)
   machine.motor("steer").angle(15);            // position motor, degrees
   const enc = machine.sensor("axleEnc");       // encoder: .angle (deg), .speed (deg/s)
   const eye = machine.sensor("eye");           // camera: .find("red") → {x, y, area} | null, .image() → {width, height, rgba}
   const red = eye.find("red");
   if (red) machine.motor("steer").angle((0.5 - red.x) * 40);
+  camera.follow("car", { distance: 1.0, height: 0.45, lag: 0.7 });   // the view and the film follow this
   if (world.object("ball").height < 0.05 && t > 1) world.stop("the ball landed");
   if (t > 2.95) log("ball at", world.object("ball").position);
   world.metric("score", red ? red.area : 0);   // a number of your own in the result
 }
 ```
-`machine.joint("id").angle/.speed`, `machine.part("id").position/.velocity`, `world.object("id").position/.velocity/.push(force)`,
-`world.contacts()`, `world.stop(reason)`. A throw fails the run at its line; a loop slower than its period for 10 ticks fails too.
-Forward drives backwards? Set `gear: -1` on the motor (or a negative speed). Motors: `velocity` (speed in rad/s), `position` (angle in degrees), `torque` (N·m).
+`machine.joint("id").angle/.speed`, `machine.part("id").position/.velocity/.speed/.height`, `world.object("id")…`,
+`world.body("car.chassis")`, `world.contacts()`, `world.stop(reason)`, `world.shared` (a blackboard every program of
+the run shares). A throw fails the run at its line; a loop slower than its period for 10 ticks fails too.
 
-## 3. A machine from the CAD app (package `machine/1`, mm)
+**The camera is scriptable**: `camera.follow(target, { distance, height, azimuthDeg, lag })`, `camera.lookAt(target)`,
+`camera.at([x, y, z])`, `camera.fov(deg)`, `camera.frame([targets], { margin })` (fit them all), `camera.path([{ t, at,
+lookAt }], { loop, ease })` (keyframes), `camera.release()`. Targets: a machine id, `"machine.part"`, an object id,
+`[x, y, z]`. A run whose program drove the camera films through it; a person watching can drag the view away and
+press Director to return. For a YouTube shot: a world program that only moves the camera, beside the machines'
+programs.
 
-The CAD model is bodies; a package groups them into PARTS (rigid links) joined by JOINTS. One STL per part (or per
-body that needs its own collider, like a wheel):
-1. Set the model to its design pose (every kinematic variable 0), then export each part: `cad_request_<Cad> { kind:"export", args:{ format:".stl", ids:[ "<stepId>:<opId>", … ], fileName:"car-chassis.stl" } }` — one request per part — then `cad_build_<Cad>`; `list_files` gives the file ids by name.
-2. Write the package: `parts` (id, name, color, material { density | mass (g), friction }, bodies [{ nodeId, name, mesh:{ fileId }, collider:"hull"|"cylinder"|"box"|"sphere"|"none" }]) — wheels and shafts `cylinder`, gears `none` (their teeth are visual; the coupling is a `gear`), everything else `hull`; `joints` (hinge/slide/ball/free/fixed, parent → child part ids, `axis:{ point, dir }` in world mm at the design pose, `range` in degrees, `damping`, `spring`); `motors` ({ id, joint, kind, maxTorque (N·m; a toy motor 0.02–0.5), maxSpeed, gear }); `gears` ({ driver, driven, teeth:[8, 24] } → the driven hinge turns −8/24 of the driver; the two parts never collide); `sensors` (camera { part, position, look, fov, width, height }, encoder { joint }, imu, rangefinder, touch, gps); `ground` (part ids welded to the world; a car has none — it is free).
-3. `rm_place_machine { machine:{ id, package, pose:{ pos:[x,y,z] } } }` — z so the wheels touch z = 0 (the CAD frame's z = 0 is the floor when the model was designed on it).
-4. A program drives `machine.motor("<motor id>")`; `rm_run`.
-Primitives need no file: `mesh:{ primitive:{ kind:"box", min, max } | { kind:"cylinder", center, axis:"x"|"y"|"z", r, length } | { kind:"sphere", center, r } }` (mm) — the catapult preset is built this way.
-
-## 4. Worlds, several machines, obstacles
+## 3. Several machines, one world
 
 Any number of machines and objects share one world and collide with everything (parts joined by a declared joint
-or gear never collide with each other). Each machine keeps its own names: `machines["car"].motor("drive")`,
-`world.body("car.chassis")`. Obstacles are `fixed: true` objects (walls, ramps, a bucket from the preset). Gravity,
-timestep, floor friction and the look are `rm_set_settings`.
+or gear never collide with each other). Programs name the machine they drive; a world program orchestrates:
+`machines["car"].motor("drive").speed(30); machines["arm"].motor("shoulder").angle(40)`. The same CAD machine placed
+twice is `car` and `car-2`. `set_settings` for gravity, timestep, floor friction and the look.
 
-## 5. Films and pictures
+## 4. Advanced
 
-`rm_run { film: true }` renders a draft film of the run (640×360@24); `rm_film { runId, quality:"share"|"youtube",
-speed: 0.25, camera:{ kind:"orbit"|"follow"|"lookAt"|"fit", target, turn, distance, elevation } }` re-simulates the
-run (deterministic) and renders it at 720p/1080p, in slow motion if asked, as a WebM workspace file — cut and narrate
-it in the video editor app. `rm_snapshot { camera, runId }` is one picture.
+A package written by hand (`place_machine { package }`, machine/1 in mm: parts with STL fileIds or primitives,
+joints with axis { point, dir }, motors, gears by teeth, sensors, ground welds) is for machines that did not come
+from the CAD app. `update_machine { id, motors: […], sensors: […], ground: […] }` gives a machine motors and senses
+without re-exporting. `check { mjcf: true }` shows the MuJoCo model. `set_world` replaces everything in one call.
 
-## 6. What to tell the person
+## 5. What to tell the person
 
-The metrics in a sentence ("the ball flew 0.49 m high and landed 3.9 m away"), what the program did, and the
-picture or film. Offer the next knob in their words (a stronger spring, a longer arm, a heavier ball).
+The metrics in a sentence ("the car drove 1.9 m and closed both loops of the eight in 15.9 s"), what the program
+did, and the picture or film. Offer the next knob in their words (a faster motor, a tighter turn, a camera that
+follows from the side).
