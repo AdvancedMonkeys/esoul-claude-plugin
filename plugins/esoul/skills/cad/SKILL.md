@@ -1,6 +1,6 @@
 ---
 name: cad
-description: Model, assemble and print-prepare real parts in the ExternalSoul CAD app (plugin_cad, a chili3d kernel) from chat or MCP — bring a person's existing parts in from Onshape or any CAD site through their cloud browser (STEP export → workspace file → cad_import), place them by the source assembly's own mates, design NEW parts around them (mounts, housings, hats, caps) as separate bodies with real screw holes and clearances, replicate a bought component from its datasheet drawing, read a part's holes and planes from the kernel (cad_describe) before designing to it, measure every fit (esoul.measure: distance + interference, never a boolean), build on the server with no tab open, show an exploded view through a variable, and export each printable part by name. Triggers on "import this CAD / STEP file", "put these parts in the drawing", "design a mount / housing / hat for it", "exploded view", "does it fit", "export for printing", "download the parts from Onshape".
+description: Model, assemble and print-prepare real parts in the ExternalSoul CAD app (plugin_cad, a chili3d kernel) from chat or MCP — bring a person's existing parts in from Onshape or any CAD site through their cloud browser (STEP export → workspace file → cad_import), place them by the source assembly's own mates, design NEW parts around them (mounts, housings, hats, caps) as separate bodies with real screw holes and clearances, replicate a bought component from its datasheet drawing, read a part's holes and planes from the kernel (cad_describe) before designing to it, measure every fit (esoul.measure: distance + interference, never a boolean), build on the server with no tab open, show an exploded view through a variable, and export each printable part by name, and hand a model whose parts turn to the RunMachine physics app as a machine (variable-driven rotations become its joints). Triggers on "import this CAD / STEP file", "put these parts in the drawing", "design a mount / housing / hat for it", "exploded view", "does it fit", "export for printing", "download the parts from Onshape", "make this move / simulate it".
 ---
 
 # CAD in ExternalSoul: parts in, design around them, parts out
@@ -132,6 +132,40 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
   (formats `.step .iges .brep .stl ".stl binary" .ply .obj`); the next `cad_build` or tab answers
   it as a workspace file named after the part (`cad_read_answer` → fileId). No `ids` = the whole
   visible model in one file.
+
+## 6. Make it move: hand the model to RunMachine
+
+A model whose parts turn can leave CAD as a MACHINE and be simulated in the RunMachine app
+(`plugin_run_machine`, MuJoCo) — read the `run-machine` skill for the other half. One call:
+`cad_export_machine_<Name> { name? }` writes `Machines/<name>/machine.json` plus one STL per body
+(content-addressed, so re-exports reuse bytes) and answers with the links, joints and gears it
+derived. `cad_list_machines_<Name>` describes what it WOULD derive without exporting. Then, in the
+RunMachine app, `place_machine { cad: { nodeId: "<this CAD app's id>" } }`.
+
+**THE MECHANISM IS DERIVED FROM THE MODEL, so the model has to say it.** Nothing is declared
+separately; the export reads the steps:
+
+- **A rotate whose angle is a VARIABLE is a joint.** The bodies that transform moves are its link,
+  the axis is the rotate's own axis and point. A part with no variable turning it is welded into
+  its parent — that is how a wheel ends up rigid, and the commonest mistake. A wheel on a stub axle
+  needs its own variable (`wheelFL`), even if nothing ever sets it.
+- **THE ORDER OF THE OPS IS THE NESTING.** Spin a wheel BEFORE you turn the link it rides on, or
+  the wheel becomes a sibling of the steering instead of its child. Write the deepest joint first.
+- **A variable that is a linear expression of another is a gear**, and teeth come from the names
+  (`Pinion 8T` meshing `Gear 24T` gives 8:24).
+- Give each link's bodies names a person would use (`Wheel L`, `Hub cap L`): they become the body
+  names a program and every error message speak.
+- Keep the design in millimetres about the origin you want the machine to stand on; RunMachine
+  drops it on the floor from the mesh bounds.
+
+After a change in CAD, `cad_build` then `cad_export_machine` again, and in RunMachine
+`update_machine { id, fromCad: true }` — it takes the new geometry and keeps the pose, motors,
+sensors and programs. The model's hash travels with the export, so RunMachine can say "CAD changed"
+on its own; never re-implement that hashing.
+
+A collider warning in the export or the run ("no axis with a round cross-section for a cylinder
+collider — using the convex hull") means a body's shape could not be fitted to the primitive it
+looks like. It is usually harmless on decoration and never harmless on a wheel.
 
 ## Honesty
 

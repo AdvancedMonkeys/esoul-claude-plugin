@@ -1,7 +1,7 @@
 {
   "name": "esoul",
   "displayName": "ExternalSoul",
-  "version": "1.12.6",
+  "version": "1.12.7",
   "description": "Sign in to ExternalSoul and give Claude your own event-sourced workspace — spreadsheets, notes, email, calendar, contacts, drawings, a cloud browser and multi-agent networks — plus skills for building and running your own multi-agent networks (triggered by email or any workspace event), email campaigns you start and follow from the conversation, narrated manim explainer videos, building and publishing websites, CAD (real parts in, mounts and housings designed around them with measured fits, parts out for printing), RunMachine (MuJoCo physics for CAD machines: worlds, programs, runs with metrics and films), and building full apps in your Forge (events, tools for chat and voice, server ops, durable tasks, tables, realtime, files, other apps, a service on your own computer, and your Google, Microsoft or any OAuth / API-key account without the app holding the secret).",
   "author": {
     "name": "ExternalSoul",
