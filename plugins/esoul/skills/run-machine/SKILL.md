@@ -31,7 +31,9 @@ names the next call. Units: metres, seconds, grams; programs speak degrees. The 
    It is checked against the machine as it is saved: a motor it names that does not exist comes back here, not from
    a run. `machine: "*"` makes a WORLD program that reaches every machine as `machines["id"]`.
 4. `run { film: true }` (20 s by default; a program ends it earlier with `world.stop`). Read the metrics, LOOK at
-   the picture; `film { runId, quality: "share" }` for a better film; change; run again. Never describe a result
+   the picture; `film { runId, quality: "share" }` for a better film (a film longer than one call can render —
+   about 3 s of share quality — renders in the BACKGROUND in parts and lands on the run as one WebM: the answer says
+   so, `read_run` lists it under files when it is there; never chunk it by hand); change; run again. Never describe a result
    without a run record; a failed run names the program line or the body.
 5. The model changed in CAD? `update_machine { id }` exports again, takes the new geometry and keeps the pose,
    motors, sensors, colliders and programs set here — the answer lists what changed, what stayed and what needs
@@ -156,21 +158,71 @@ When something will not stand up, measure before you tune: a short run that appl
 and logs the tilt, the wheel rate and the travel tells you in one call whether the wheels are
 gripping, whether the loop is too slow or whether the machine is simply stuck.
 
-## 4. Several machines, one world
+## 4. Before the first run: colliders, mass, motors
+
+A machine that falls over at t = 0.1 s, before any program moved it, is a collider problem, not a control problem.
+
+- **Contacts are excluded only between a joint's two parts.** Every other pair collides, so two links that sit near
+  each other at rest (a neck and the arm two joints away) push each other apart the moment the run starts. A
+  collider is the body's convex HULL by default — a fork's two prongs become one slab — and `cylinder`/`sphere`
+  is fitted to the bounding box, so read the warnings and set colliders on purpose: `none` for decoration
+  (springs, bulbs, buttons), `hull` for the rest, a primitive only for a body that really is one (the runtime
+  refuses a cylinder the body fills under 60 % of). Proof: a 1 s run with the motors holding 0° must log the
+  joints at ~0.
+- **Mass.** A closed mesh weighs its own volume at 1000 kg/m³ (runtime 7); a mesh that is not a closed solid
+  weighs its hull and the load says so. Real parts are not water: give the part that should anchor the machine a
+  realistic `material.mass` (a lamp's cast base 900 g, not 360 g of plastic), and check with `describe_machine`.
+- **Will it stand?** Sum the parts' masses × their centres (the `describe_machine` lines) for each pose you
+  intend; the centre of mass must stay well inside the footprint. Do it on paper before the run — a few lines of
+  forward kinematics answer in milliseconds what a fallen run answers in a minute.
+- **Position motors are springs.** Their stiffness grows with `maxTorque` (≈ 0.8 × maxTorque N·m per radian), so
+  a toy torque sags under gravity (3–7° on a desk lamp at 1–2 N·m). Size `maxTorque` so the static sag is ~1°,
+  then add joint `damping` near half of critical, `2·sqrt(k·I)` — less rings, more is sluggish. Joint `range` and
+  `damping` live in the package (`set_world` or `place_machine { package }`).
+- **Diagnose a fall by logging, not guessing:** the base's uprightness `1 − 2(qx² + qy²)` from `part.quat`, the
+  joint angles and `world.contacts()` every 0.1 s around the moment it goes; a contact between two links that
+  should never meet names the cause.
+
+## 5. Making a machine perform (character, emotion)
+
+Motion reads as feeling when it is timed like animation, not when it is precise. What worked for a desk lamp
+that wakes, startles, plays with a ball, sulks and is delighted:
+
+- **Keyframed poses with easing.** A list of `[start, duration, pose, ease]`; each beat eases from where the
+  last one left the joints. `snap` (fast out) for a startle, a cubic in-out for anything deliberate, `back`
+  (overshoot) for a happy settle, ease-IN for a strike so it accelerates into the hit.
+- **Anticipation before every fast move:** a wind-up the other way (lean back before the bonk, crouch before a
+  hop). **Follow-through** after it.
+- **The head leads, the body follows:** aim the head at its target every tick (a gaze solved from the machine's
+  own joint geometry and the target's live position), and let the turning joint chase its target through a lag
+  (`out += (target − out)·(1 − e^(−dt/τ))`, τ 0.1 s alert … 0.9 s sad).
+- **Layers on top of the pose:** a slow breath (all joints, 3–4 s period, bigger when sad or asleep), a decaying
+  tremble after a fright, a two-nod sniff, a wag. Never a still pose.
+- **Speed is the budget:** a big joint swinging 90° in 0.16 s throws a 1 kg machine over; scale amplitude ×
+  speed to what the base can hold and test the fastest beat first.
+- **Props are staged, the key contact is physics.** A small steering force on an object (`world.object(id).push`
+  as a PD toward a path, capped at ~0.3 N) places a ball between beats; switch it OFF for the moment that
+  matters (the bonk) so the result is real, and make the next staged path continue the direction physics gave.
+- **Shoot it:** a world-length `camera.path` that cuts between angles at beat boundaries — profile for sadness
+  (a droop reads as a silhouette), wide when an object leaves, and end with the machine looking into the lens.
+  Set `defaultRun` to the performance length so Play shows all of it.
+
+## 6. Several machines, one world
 
 Any number of machines and objects share one world and collide with everything (parts joined by a declared joint
 or gear never collide with each other). Programs name the machine they drive; a world program orchestrates:
 `machines["car"].motor("drive").speed(30); machines["arm"].motor("shoulder").angle(40)`. The same CAD machine placed
 twice is `car` and `car-2`. `set_settings` for gravity, timestep, floor friction and the look.
 
-## 5. Advanced
+## 7. Advanced
 
 A package written by hand (`place_machine { package }`, machine/1 in mm: parts with STL fileIds or primitives,
 joints with axis { point, dir }, motors, gears by teeth, sensors, ground welds) is for machines that did not come
 from the CAD app. `update_machine { id, motors: […], sensors: […], ground: […] }` gives a machine motors and senses
-without re-exporting. `check { mjcf: true }` shows the MuJoCo model. `set_world` replaces everything in one call.
+without re-exporting. `check { mjcf: true }` shows the MuJoCo model. `set_world` replaces objects, machines and metrics in one call and
+keeps the settings it does not name. A run whose call died before it finished reads `lost` — run it again.
 
-## 6. What to tell the person
+## 8. What to tell the person
 
 The metrics in a sentence ("the car drove 1.9 m and closed both loops of the eight in 15.9 s"), what the program
 did, and the picture or film. Offer the next knob in their words (a faster motor, a tighter turn, a camera that

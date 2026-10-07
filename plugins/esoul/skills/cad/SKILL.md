@@ -111,6 +111,28 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
   EVERY pair that touches, before you say it fits. Never check a fit with `booleanCommon` — it
   consumes the parts.
 
+## 4a. Writing programs that build the first time
+
+- **Sketch planes and their axes** (measured): `XY` u = x, v = y, extrudes +z · `YZ` u = y, v = z, extrudes +x ·
+  `ZX` u = **−x**, v = z, extrudes +y. A circle at (u, v) = (20, 50) on `ZX` lands at x = −20, z = 50.
+  `{ base, offset }` moves the plane along its normal; `startOffset` moves an extrude's start along it.
+- **Entities are `{ type, params }`**: `{ type: "circle", params: [cx, cy, r] }`, `{ type: "line", params: [x1, y1, x2, y2] }`,
+  `{ type: "arc", params: [cx, cy, sx, sy, ex, ey] }` (counter-clockwise).
+- **A profile closes only on exact endpoints.** An arc's end is computed from its centre and START radius, so a
+  dome arc between two hand-picked points misses by 0.0005 mm and the revolve fails "profile is not closed".
+  Use shapes that close by construction: a half-circle with both ends on the axis, or a boolean (a cylinder
+  `common` a sphere is a domed base).
+- **A body of revolution off-origin**: sketch the half-profile on `{ base: "XY", offset: z0 }` and revolve about
+  an axis through (0, 0, z0) — cones, shades, bulbs, rims (a circle revolved is a torus).
+- **Joints in their own step.** After the parts, one Kinematics step: one `transform` per BODY per joint, the
+  innermost joint first (tilt → wrist → elbow → shoulder → swivel), the first op of each joint named `j_<joint>`
+  (it names the joint), axes chosen so + reads naturally (`(0, −1, 0)` makes + lift a forward-pointing arm).
+  Bodies are addressed `<stepId>:<opId>` across steps. `list_machines` must show one link per moving group.
+- **Test the pose before exporting:** set the variables to a pose, `cad_build { view: true }`, look, then set
+  them back to 0 — the pose at export is the machine's zero in RunMachine.
+- **Hollow is fine, closed is required:** a shell exported as a closed solid weighs its own volume in RunMachine;
+  every gap in it makes the part weigh its convex hull.
+
 ## 5. Exploded view, pictures, exports
 
 - Variable types are chili's own words: `length` (mm), `angle` (degrees), `unitless` — any other
