@@ -40,7 +40,7 @@ names the next call. Units: metres, seconds, grams; programs speak degrees. The 
    attention (a motor whose joint is gone). `check` / `read_world` say "CAD changed" per machine.
 
 Obstacles and props: `add_object { preset: "ball" | "box" | "ramp" | "wall" | "bucket" | "catapult" }` (metres,
-grams; `fixed: true` objects are part of the world). `set_metrics` says what every run answers with: max_height /
+grams; `fixed: true` objects are part of the world). `picture { runId, time }` shows any MOMENT of a finished run (re-simulated to it, so it is that run) — check a beat without a film. `set_metrics` says what every run answers with: max_height /
 distance_from_start / max_speed of a body, joint_angle, inside a region, touched another body, time_to a metric.
 `remove { kind, id }` takes anything out.
 
