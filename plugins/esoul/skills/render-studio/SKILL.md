@@ -29,7 +29,10 @@ running one.
 2. **Preview a still first**: `render_scene_<Name> { …scene, stills: [4.0], quality: "draft", output: { format: "png" } }`.
    It answers at once with a `renderId`. A draft still takes seconds; LOOK at it before spending minutes on a film.
 3. `read_render_<Name> { renderId }` until it says DONE and names the files (`Renders/<title>.png`, with their file
-   ids). A still is a picture you can view; a film is an mp4 / mov / webm.
+   ids). A still is a picture you can view; a film is an mp4 / mov / webm. A finished FILM also comes back with the
+   computer's own review: a contact sheet of 16 finished frames as a picture, and in words any frozen or black
+   stretch and any label that overlaps another or points off screen. Look at every frame of the sheet; fix what it
+   names before calling the film done.
 4. Render the film: the same scene with `duration` and a real `quality`, no `stills`.
 5. `cancel_render_<Name>` stops one; `retry_render_<Name>` sends the same scene again, also to another computer.
 
@@ -72,7 +75,10 @@ progress in the app: frames, time left, and the film playing when it lands. Tell
   picks that material before any other rule; then words do (`bolt`, `shaft`, `gear` → brass, `wheel` → rubber,
   `coil`, `bracket`, `glass`, `cable`…). Override by pattern: `materials: { "*housing*": "painted-matte",
   "*lens*": { "preset": "glass", "color": "#cfe8ff" } }` (presets in `render_catalog`, 32 of them).
-- **Over time** (keys are `[seconds, value]`, eased between):
+- **Over time** (keys are `[seconds, value]`, eased between; ANYTHING that takes keys also takes an ENVELOPE so
+  nothing pops — `{ base?, keys?, holds: [{ from, to, value, ease? }]` (lit while the narration names it),
+  `bursts: [{ at, peak, rise?, fall? }]` (a flash that decays), `pulses: { start, every, count | until, peak, rise?,
+  hold?, fall? }` (a coil knocking) `}` — the parts add up over the base):
   `explode: { keys: [[0, 0], [3, 1.2]] }` slides bodies apart from the centre; `xray: [{ match, keys | opacity }]`
   makes bodies see-through; `glows: [{ match, color, keys }]` lights bodies up (a coil when its current flows);
   `visibility: [{ match, keys: [[t, 0|1]] }]` hides and shows; `machines[i].section: [{ point, normal }]` (mm, the
@@ -84,9 +90,13 @@ progress in the app: frames, time left, and the film playing when it lands. Tell
   `webm` (VP9, alpha), stills `png` / `jpg` / `exr`; `output.aspect`: 16:9, 9:16, 1:1, 4:5, 4:3, 21:9, 2:1;
   `output.transparent: true` (MOV / WebM) to lay the model over other footage. `time: { start, speed }` takes part
   of a trajectory or plays it faster.
-- **Labels afterwards**: `anchors: [{ id, body, point }]` (`point` in mm in that body's frame) saves where each point
-  lands on screen, frame by frame, as `Renders/<title> — camera.json` (`frames[i].anchors[id] = [x, y, visible]` in
-  pixels). Draw labels over the film from it; never guess positions from a still.
+- **Words in the film**: `overlays: { kicker, title: { text, sub?, on, off }, captions: [{ text, on, off }],
+  labels: [{ anchor, text, sub?, color?, offset?: [x, y], on, off }] }` — drawn by the computer while it encodes,
+  in Inter on dark plates, fading in and out. A label follows an `anchors` point frame by frame with a leader line:
+  `anchors: [{ id, body, point }]` (`point` in mm in that body's frame); a label naming an anchor the scene does
+  not record is refused. Keep a label's plate over dark background (`offset` moves it) and end one label as the
+  next one starts. The anchors are also saved as `Renders/<title> — camera.json` (pixels per frame).
+- **Camera follow**: `follow: { target, lag }` — `lag` is seconds to catch up (0.12–0.4 reads as an operator).
 
 ## 3. Templates
 
@@ -106,6 +116,11 @@ progress in the app: frames, time left, and the film playing when it lands. Tell
   very long film into shots (it is a film anyway).
 - **Scene too big for one call** — thin keyframe lists to their change points (a straight run of keys between two
   values is one pair); the result is identical.
+
+- **The review says "frozen"** — a stretch of ≥4 s where the picture barely changes: give it a camera move, a
+  breathing glow (`pulses` with a low peak), or cut the shot shorter. **"labels … overlap"** — end one before the
+  next starts, or move one with `offset`. **"points off screen"** — the anchor left the frame; shorten the label's
+  on/off or frame the shot wider.
 
 ## 5. What to tell the person
 
