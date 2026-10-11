@@ -222,7 +222,16 @@ from the CAD app. `update_machine { id, motors: […], sensors: […], ground: [
 without re-exporting. `check { mjcf: true }` shows the MuJoCo model. `set_world` replaces objects, machines and metrics in one call and
 keeps the settings it does not name. A run whose call died before it finished reads `lost` — run it again.
 
-## 8. What to tell the person
+## 8. A film people will watch
+
+RunMachine's own film shows that the motion is right. To publish it, render the run in Render Studio (skill
+`render-studio`): `machines: [{ run: { app: "<this app's id>", runId } }]` renders the machine exactly as simulated —
+its pose, its trajectory and, when the scene sets no camera, the camera the program drove — in studio light with real
+materials, on the person's GPU. A run of an older version of the model drives the NEW CAD export too (`from` the new
+export, `trajectory` the run's `.traj` file id, `placement` as it was run). The whole pipeline, with labels and the
+cut, is the `cad-to-film` skill.
+
+## 9. What to tell the person
 
 The metrics in a sentence ("the car drove 1.9 m and closed both loops of the eight in 15.9 s"), what the program
 did, and the picture or film. Offer the next knob in their words (a faster motor, a tighter turn, a camera that

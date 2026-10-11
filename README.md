@@ -42,6 +42,9 @@ connection reaches every project and workspace on your account.
 | `slideshow` | Slides as live TSX on a 1280×720 canvas, edited by find/replace and judged by a vision critic; themes bundled |
 | `browser-use` | Drive your cloud browser — logged-in sites, forms, web editors, batch downloads — and know whether it actually worked |
 | `cad` | Real parts in the CAD app: bring your existing parts in (Onshape through your cloud browser, or any STEP file), place them by the source mates, design mounts, housings and caps around them with measured fits, an exploded view, and each printable part exported by name |
+| `run-machine` | Physics for the machines you design: bring a CAD model into RunMachine (MuJoCo), drive its motors with a small program, run it headless for metrics, a picture and a film, and tune a real controller against the machine's measured mass and grip |
+| `render-studio` | Studio-quality films and stills with Blender on your own GPU: CAD models, RunMachine runs exactly as simulated, any 3D file or a .blend; ten looks, materials from part names, camera moves, cutaways, x-ray, glows, label anchors, MP4/MOV/WebM |
+| `cad-to-film` | The whole pipeline from a machine to a film people watch: model with the detail a camera needs, motion in RunMachine, every shot rendered in Render Studio, labels pinned to parts (ships the label compositor and its overlap check), a narrated cut in the video editor |
 
 ## Requirements
 
@@ -51,8 +54,10 @@ Claude Code handles the OAuth flow, token storage and refresh.
 One app the skills drive is turned on per account for now: the Gmail app
 (`email-campaign`, the mail parts of `agent-recipes`). If `create_app` says the
 type is not available to your account, ask ExternalSoul to enable it — every
-other app (CAD, notes, slides, the browser, the sandbox, the Forge, agents, the
-site, the study, the monitor) is open to every account.
+other app (CAD, RunMachine, Render Studio, notes, slides, the browser, the
+sandbox, the Forge, agents, the site, the study, the monitor) is open to every
+account. Render Studio renders on a computer of yours: you connect it once from
+the app and approve its program (it installs Blender if the computer has none).
 
 Prefer to run it yourself, or using another client? The same tools ship as a
 local server in the [`esoul` Python SDK](https://pypi.org/project/esoul/):

@@ -154,6 +154,11 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
   (formats `.step .iges .brep .stl ".stl binary" .ply .obj`); the next `cad_build` or tab answers
   it as a workspace file named after the part (`cad_read_answer` → fileId). No `ids` = the whole
   visible model in one file.
+- **A picture or a film to SHOW people** is not the CAD view: hand the model over with `cad_export_machine_<Name>`
+  and render it in Render Studio (skill `render-studio`; the whole pipeline is `cad-to-film`) — Blender on the
+  person's own GPU, real materials, studio light, camera moves, cutaways. Render Studio picks each body's material
+  from its NAME, so name bodies for what they are made of: `Post (steel)`, `Knob (brass)`, `Lens (glass)`; and keep
+  parts that differ in material as separate bodies (the same rule as colour above).
 
 ## 6. Make it move: hand the model to RunMachine
 

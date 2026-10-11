@@ -54,4 +54,13 @@ AMISSING=$(comm -23 <(echo "$AREAL") <(echo "$AUSED"))
 if [ -n "$APHANTOM" ]; then echo "agent-builder skills name tools the app does not have: $APHANTOM" >&2; exit 1; fi
 if [ -n "$AMISSING" ]; then echo "agent-builder skills never mention real tools: $AMISSING" >&2; exit 1; fi
 echo "agent-builder: $(echo "$AREAL" | wc -l) toolkit tools, all real, all documented"
+# render-studio + cad-to-film are written HERE; every `<verb>_<Name>` tool they name must be one Render Studio mints,
+# and render-studio must name every one of them.
+RS="$KINETIC/src/plugins/render-studio/app.tsx"
+RREAL=$(grep -oE '\[`[a-z_]+_\$\{base\}`\]' "$RS" | grep -oE '[a-z_]+_\$' | sed 's/_\$$//' | sort -u)
+RUSED=$(grep -ohE '`[a-z_]+_<Name>' "$DST"/render-studio/SKILL.md | tr -d '`' | sed 's/_<Name>$//' | sort -u)
+RPHANTOM=$(comm -13 <(echo "$RREAL") <(echo "$RUSED")); RMISSING=$(comm -23 <(echo "$RREAL") <(echo "$RUSED"))
+if [ -n "$RPHANTOM" ]; then echo "render-studio names tools the app does not have: $RPHANTOM" >&2; exit 1; fi
+if [ -n "$RMISSING" ]; then echo "render-studio never mentions real tools: $RMISSING" >&2; exit 1; fi
+echo "render-studio: $(echo "$RREAL" | wc -l) tools, all real, all documented"
 echo "ok"
