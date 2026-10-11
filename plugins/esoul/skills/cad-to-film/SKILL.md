@@ -62,7 +62,7 @@ A SMALL TEAM, IF YOU CAN START SUB-AGENTS (Claude Code's Agent tool)
 One BUILDER makes the shots. REVIEWERS each hold ONE lens — truth (against the facts page), motion (pops, freezes, pacing), legibility (labels, contrast, text on bright parts), the viewer (would a stranger follow it?) — and they read the review pictures and the numbers themselves, never the builder's report. A FIXER takes their findings. Rounds until a round finds nothing. Keep one PROGRESS page in the workspace: decisions, each round's findings and what was fixed. Without sub-agents, run the lenses yourself, one at a time, on the pictures.
 
 LONG JOBS
-Render on the person's computer (Render Studio), not in a code sandbox: a sandbox restarts and loses a render in progress. Send all shots and let them queue; collect each with read_render. Tell the person where to watch progress (the Render Studio app's Renders tab).
+Render on the person's computer (Render Studio), not in a code sandbox: a sandbox restarts and loses a render in progress. Send all shots and let them queue; collect each with read_render. WATCH YOUR OWN RENDERS: poll read_render until each is DONE or FAILED, and the moment one FAILS read its reason, say it, and fix the cause before sending anything again — Retry sends the same scene and fails the same way. The person must never be the first to see a failure. Tell the person where to watch progress (the Render Studio app's Renders tab).
 
 HONESTY
 Never describe a shot you did not look at. Say which shots are Render Studio renders and which are RunMachine films or stills, how long rendering took, and what you simplified. The person decides what goes out under their name.

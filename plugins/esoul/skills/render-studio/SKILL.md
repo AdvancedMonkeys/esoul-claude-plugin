@@ -122,6 +122,10 @@ progress in the app: frames, time left, and the film playing when it lands. Tell
   next starts, or move one with `offset`. **"points off screen"** — the anchor left the frame; shorten the label's
   on/off or frame the shot wider.
 
+- **A render FAILED** — `read_render` names the reason (the last lines Blender said). Read it the moment it fails,
+  tell the person in a sentence and fix the cause; `retry_render` sends the SAME scene and fails the same way. Watch
+  every render you sent until it is DONE or FAILED — the person must never be the first to see a failure.
+
 ## 5. What to tell the person
 
 What you rendered (the look, the move, how long, at what quality), on which computer, how long it took, and where it
