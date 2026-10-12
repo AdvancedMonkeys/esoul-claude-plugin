@@ -105,7 +105,17 @@ film's own `push { zoom, x, y, over }` (a camera move over the card, eased) and 
 Open on `fade in`, let the idle motion breathe, push into the junction the narration names, pull back, take it
 apart, put it back, `fade out`. Zoom is over the whole CARD on its paper and the drawing is about half the card:
 ×1.4–2 frames the machine in a 16:9 film, ×3–4 one junction. Pull back to ×1.4 (not ×1) BEFORE "apart", or the
-lifted parts leave the frame. `preview: true` answers with four frames — look at them before filming.
+lifted parts leave the frame. `push` with `over: 0` is a CUT: open a shot with `[0, "push", { …, over: 0 }]` — any
+`over` above 0 eases in from the whole card, so frame 0 shows the whole card; below ×1.4 a 16:9 frame shows the
+card's border. A story told in shots: one shot per scene, each opening where the last ended — press the keys that
+reach its scene at second 0, and make the figure REDRAW ON THE PRESS (call its draw in the key handler, not on the
+next animation frame), or frame 0 shows the old pose. `preview: true` answers with four frames — look at them
+before filming.
+
+Film one shot at a time and keep each short: a film call can outlast your client's timeout (it keeps running on the
+platform — `read_film` shows it land), several at once queue behind each other, and a 1080p film over ~2 s may need
+filming in `from`/`to` parts. The video editor exports 1280×720, so 720p shots lose nothing. Stitch the films with
+`add_clips { items: [{ fileId, sourceDuration }, …] }` in story order, then `export_timeline`.
 
 ## 8. Film — `film_shot_<Name>` and `read_film_<Name>`
 
