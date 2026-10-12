@@ -21,14 +21,20 @@ on the figure's own clock, and keeps the built page, stills, checks and films as
 whose working *is* the concept (a cache key → a pin-tumbler lock; a separable blur → a bed of nails beside two
 combs). Too abstract and too bland fail the same way; the fix is a recognisable machine of many precise parts.
 
-## 1. Read before you build (every first figure in a session)
+## 1. Read before you build — a budget, not a library (every first figure in a session)
+
+The guide ONCE, the examples list ONCE, at most ONE example file, then build: a first figure within the first five
+calls, improved from its picture, beats a perfect read (eight example reads — the big ones are 100 KB — once cost a
+first figure its whole turn before a line was drawn).
 
 1. `figure_guide_<Name>` — `topic: "skill"` (the default) is his whole workflow; read it once. Then the topic you
    need: `craft` (parts, painter's order, pipes), `motion` (springs, tours, explodes), `kit` (every function —
    `lathe` for round parts on any axis, `tube` for pipes, prisms, coils), `verify` (the critic's checklist), `webgl`
    (shaders that live in the drawing), `3d`, `walkthrough`, `react`. `find: "spring"` narrows to matching sections.
 2. `figure_examples_<Name>` — no arguments lists them; `{ name }` gives its files; `{ name, file }` the source with
-   line numbers. Open the closest and copy its STRUCTURE:
+   line numbers, 300 lines a page (`from` for the next). Pick the closest SMALL one and start from it
+   (`write_figure { name, from }`, then `edit_figure`) or page through its `build.mjs` — never several, never a big
+   one whole. What each shows:
    `starter` (a bench with a sliding carriage — the smallest working figure, written to be grown),
    `dial-indicator` (~300 lines, hover slides the carriage), `desk-computer` (types onto a CRT in the case plane),
    `four-stroke-engine` (a cutaway, ~74 solids, `model.mjs` + `parts.mjs` + `live.js`), `raptor-engine` (comes apart
@@ -64,6 +70,14 @@ travels whole: `write_figure { fromFiles: { "build.mjs": "<path or id>" } }` or 
 pieces. It rebuilds and answers like `write_figure`. `read_figure_<Name>` reads the studio (no id), one
 figure (files, build, card, controls, checks, shots) or one file with line numbers (`file`, `from`, `to`). Figures
 are named by id or by name.
+
+**Write it in pieces — every tool input under ~300 lines (~12 KB).** A reply has an output limit and a tool call cut
+off by it never runs (a whole figure sent as one `write_figure` input was cut, retried and cut again). Start from an
+example (`write_figure { from }`) or a short build.mjs that already builds, then add `model.mjs` / `parts.mjs` /
+`live.js` one file per `edit_figure { file, text }`, and change files with `edits`, never by resending them.
+`write_figure { id, files }` REPLACES every file of that figure — never use it to add one. Between pieces the studio
+shows "Being written — waiting for parts.mjs" (an import of a file not written yet); that is not an error to fix,
+it builds when the last piece lands.
 
 Rules that each cost a round when forgotten:
 - **Painter's order is yours**: paint back to front (`k.depthOf`); split what wraps another part (a spring round a
