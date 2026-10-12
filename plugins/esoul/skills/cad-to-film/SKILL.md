@@ -47,6 +47,7 @@ RunMachine: place_machine { cad }, a program per machine, one run per shot as lo
 STEP 8 — PAINT (RENDER STUDIO)
 Per shot one scene: the run or the export, a look ("studio-dark" for a dark film, "cyclorama" for a white one), a camera move, materials by name, glows / xray / explode / section over time, glare and vignette, and overlays (kicker, captions, labels pinned to anchors) drawn by the computer into the film.
 Fault behind it: "the renders are extremely bland and ugly" — default grey, flat light, one camera. Never ship the default: pick the look, the move and the materials on purpose, and compare the preview still with the bar ("would this pass on a good YouTube channel?") before the film.
+A drawn beat instead of a photographic one (an isometric, anatomy-style figure of the mechanism, exploded, parts moving): the `figure-studio` skill films it to WebM for the same timeline.
 
 STEP 9 — MAKE IT LIVE
 Every shot moves, start to end; nothing pops. → reference/motion.md before writing the first scene. In short: envelopes (bursts, pulses, holds) instead of hard keys; a camera that keeps drifting through a hold; the video editor's drift on any still or held shot.

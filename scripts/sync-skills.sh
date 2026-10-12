@@ -63,4 +63,13 @@ RPHANTOM=$(comm -13 <(echo "$RREAL") <(echo "$RUSED")); RMISSING=$(comm -23 <(ec
 if [ -n "$RPHANTOM" ]; then echo "render-studio names tools the app does not have: $RPHANTOM" >&2; exit 1; fi
 if [ -n "$RMISSING" ]; then echo "render-studio never mentions real tools: $RMISSING" >&2; exit 1; fi
 echo "render-studio: $(echo "$RREAL" | wc -l) tools, all real, all documented"
+# figure-studio is written HERE; every `<verb>_<Name>` tool it names must be one Figure Studio mints,
+# and it must name every one of them.
+FS="$KINETIC/src/plugins/figure-studio/app.tsx"
+FREAL=$(grep -oE '\[`[a-z_]+_\$\{base\}`\]' "$FS" | grep -oE '[a-z_]+_\$' | sed 's/_\$$//' | sort -u)
+FUSED=$(grep -ohE '`[a-z_]+_<Name>' "$DST"/figure-studio/SKILL.md | tr -d '`' | sed 's/_<Name>$//' | sort -u)
+FPHANTOM=$(comm -13 <(echo "$FREAL") <(echo "$FUSED")); FMISSING=$(comm -23 <(echo "$FREAL") <(echo "$FUSED"))
+if [ -n "$FPHANTOM" ]; then echo "figure-studio names tools the app does not have: $FPHANTOM" >&2; exit 1; fi
+if [ -n "$FMISSING" ]; then echo "figure-studio never mentions real tools: $FMISSING" >&2; exit 1; fi
+echo "figure-studio: $(echo "$FREAL" | wc -l) tools, all real, all documented"
 echo "ok"

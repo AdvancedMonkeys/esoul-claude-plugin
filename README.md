@@ -45,6 +45,7 @@ connection reaches every project and workspace on your account.
 | `run-machine` | Physics for the machines you design: bring a CAD model into RunMachine (MuJoCo), drive its motors with a small program, run it headless for metrics, a picture and a film, and tune a real controller against the machine's measured mass and grip |
 | `render-studio` | Studio-quality films and stills with Blender on your own GPU: CAD models, RunMachine runs exactly as simulated, any 3D file or a .blend; ten looks, materials from part names, camera moves, cutaways, x-ray, glows, label anchors, MP4/MOV/WebM |
 | `cad-to-film` | The whole pipeline from a machine to a film people watch: model with the detail a camera needs, motion in RunMachine, every shot rendered in Render Studio, labels pinned to parts (ships the label compositor and its overlap check), a narrated cut in the video editor |
+| `figure-studio` | Crafted, animated isometric figures of real machines in the style of Ryan's anatomy kit (MIT): code against his kit, built and checked by his audits on the server, close-ups to judge by, scripted shots with camera pushes, filmed to WebM for the video editor |
 
 ## Requirements
 

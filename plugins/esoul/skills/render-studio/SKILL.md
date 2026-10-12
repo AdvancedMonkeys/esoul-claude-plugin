@@ -11,7 +11,9 @@ app's program there runs Blender with Cycles on the graphics card and puts the f
 `Renders/` folder. Its tools are minted `<verb>_<Name>` from the app's name — for an app called "Render Studio":
 `render_scene_Render_Studio`. Below they are written `render_scene_<Name>`.
 
-The CAD app's and RunMachine's own pictures are for checking work. Render Studio is for showing it.
+The CAD app's and RunMachine's own pictures are for checking work. Render Studio is for showing it. For a drawn,
+isometric "how it is put together" figure of a machine (anatomy style, exploded, filmed to WebM), use the
+`figure-studio` skill instead.
 
 ## 0. A computer first — the person's click, never yours
 
