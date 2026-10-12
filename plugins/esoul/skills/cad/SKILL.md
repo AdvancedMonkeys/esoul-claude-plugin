@@ -154,7 +154,7 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
   (formats `.step .iges .brep .stl ".stl binary" .ply .obj`); the next `cad_build` or tab answers
   it as a workspace file named after the part (`cad_read_answer` → fileId). No `ids` = the whole
   visible model in one file.
-- **A picture or a film to SHOW people** is not the CAD view: hand the model over with `cad_export_machine_<Name>`
+- **A picture or a film to SHOW people** is not the CAD view: hand the model over with `export_machine_<Name>`
   and render it in Render Studio (skill `render-studio`; the whole pipeline is `cad-to-film`) — Blender on the
   person's own GPU, real materials, studio light, camera moves, cutaways. Render Studio picks each body's material
   from its NAME, so name bodies for what they are made of: `Post (steel)`, `Knob (brass)`, `Lens (glass)`; and keep
@@ -164,9 +164,9 @@ between magnets: `SKIN = 1.5`) and name them in the step label.
 
 A model whose parts turn can leave CAD as a MACHINE and be simulated in the RunMachine app
 (`plugin_run_machine`, MuJoCo) — read the `run-machine` skill for the other half. One call:
-`cad_export_machine_<Name> { name? }` writes `Machines/<name>/machine.json` plus one STL per body
+`export_machine_<Name> { name? }` writes `Machines/<name>/machine.json` plus one STL per body
 (content-addressed, so re-exports reuse bytes) and answers with the links, joints and gears it
-derived. `cad_list_machines_<Name>` describes what it WOULD derive without exporting. Then, in the
+derived. `list_machines_<Name>` describes what it WOULD derive without exporting. Then, in the
 RunMachine app, `place_machine { cad: { nodeId: "<this CAD app's id>" } }`.
 
 **THE MECHANISM IS DERIVED FROM THE MODEL, so the model has to say it.** Nothing is declared
@@ -185,7 +185,7 @@ separately; the export reads the steps:
 - Keep the design in millimetres about the origin you want the machine to stand on; RunMachine
   drops it on the floor from the mesh bounds.
 
-After a change in CAD, `cad_build` then `cad_export_machine` again, and in RunMachine
+After a change in CAD, `cad_build` then `export_machine` again, and in RunMachine
 `update_machine { id, fromCad: true }` — it takes the new geometry and keeps the pose, motors,
 sensors and programs. The model's hash travels with the export, so RunMachine can say "CAD changed"
 on its own; never re-implement that hashing.

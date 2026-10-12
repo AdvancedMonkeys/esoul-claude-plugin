@@ -29,7 +29,7 @@ Two materials on one body is two bodies.
 A Render Studio section (machines[i].section: [{ point, normal }]) shows whatever is modelled behind the cut, with capped faces. If nothing is modelled there, the cut shows a hollow shell. Model every internal part the narration names, in its true place and size from the facts page, and the layers between them (former, liner, shield). An xray of a cover needs something worth seeing behind it too.
 
 5. MOTION NEEDS JOINTS, IN THE MODEL
-A rotation whose angle is a variable is a joint; a part with no variable turning it is welded to its parent. Spin the deepest joint first (a wheel before the arm it rides on). A variable that is a linear expression of another is a gear (teeth from the names: "Pinion 8T", "Gear 24T"). Then cad_build, cad_export_machine, and in RunMachine place_machine { cad } or update_machine { fromCad: true } after a change.
+A rotation whose angle is a variable is a joint; a part with no variable turning it is welded to its parent. Spin the deepest joint first (a wheel before the arm it rides on). A variable that is a linear expression of another is a gear (teeth from the names: "Pinion 8T", "Gear 24T"). Then cad_build, export_machine, and in RunMachine place_machine { cad } or update_machine { fromCad: true } after a change.
 
 6. CHECK IT AS THE CAMERA WILL SEE IT
 - cad_build lists every body with its box: count them against the part list.

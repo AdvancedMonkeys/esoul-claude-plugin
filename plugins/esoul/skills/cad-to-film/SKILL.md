@@ -39,7 +39,7 @@ One camera language for the film: a house angle (three-quarter view, 25–35° a
 Narrated films: write the narration first, one paragraph per shot, measure it (the video editor's narrate_script with estimateOnly: true gives the voice's real rate), and size every shot from its line. Never size shots before the narration exists.
 
 STEP 6 — BUILD THE GEOMETRY ONCE
-CAD: separate bodies for separate materials, joints as variables (a variable-driven rotation is a joint; a part with no variable is welded), cad_build until every body is listed, cad_export_machine. Check the model the way the camera will see it: a Render Studio preview still (stills: [t], quality "draft") in the film's look. Grey paint in Render Studio means a body name lacks a material.
+CAD: separate bodies for separate materials, joints as variables (a variable-driven rotation is a joint; a part with no variable is welded), cad_build until every body is listed, export_machine. Check the model the way the camera will see it: a Render Studio preview still (stills: [t], quality "draft") in the film's look. Grey paint in Render Studio means a body name lacks a material.
 
 STEP 7 — MOTION
 RunMachine: place_machine { cad }, a program per machine, one run per shot as long as the shot (time.speed in Render Studio stretches it). Check a moment with picture { runId, time } before rendering a film of it. A better model later does not need new runs: render the NEW export with the OLD run's trajectory.
