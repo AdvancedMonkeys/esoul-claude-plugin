@@ -15,6 +15,7 @@ stage has its own skill; this one keeps the order and decides the path.
 |---|---|---|---|
 | 1 | Story | `website-story` | who it is for, the chapters, every line of copy |
 | 2 | Look | `website-look` | palette, fonts, one accent, the image style string, the stills |
+| 2b | Caliber | `website-caliber` | the brand → features row, a page recipe (pinned chapters, giant type, the client's own 3D object), the nine rules the caliber judge scores |
 | 3 | Films (optional, strong) | `website-films` | short films of the product or place, with posters |
 | 4 | Media | `website-media` | every image and film on the platform, named, sized |
 | 5 | Build | the path below | the pages, built from the story and the look |

@@ -5,7 +5,7 @@ description: The look of a website — palette, fonts, one accent, a house style
 
 # One look, held everywhere
 
-Previous stage: `website-story`. Next: `website-films` (optional) → `website-media`.
+Previous stage: `website-story`. Next: `website-caliber` (the bar — giant type, pinned chapters, the client's own 3D object; read it before laying out any page) → `website-films` (optional) → `website-media`.
 
 ## 1. Decide four things, write them down, then never improvise
 
