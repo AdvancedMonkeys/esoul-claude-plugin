@@ -49,7 +49,7 @@ films — look at those yourself; they need a 0.4–0.6 dark overlay.
 
 Set them with `publish_homepage(… , seo_title, seo_description, seo_image_url)` (the image can
 be an https URL or an app asset path). For a Site app also set the business record
-(`set_business_<site>`: name, address, hours, phone) — it becomes structured data on every page.
+(`set_business_<site>`: name, street/city, `openingHours` as a list, `telephone`) — it becomes structured data on every page.
 
 ## 4. Publish — the owner's call
 

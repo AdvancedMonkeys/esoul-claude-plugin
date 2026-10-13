@@ -100,9 +100,9 @@ reverts your last batch.
    returns. Product photos live in folders `Menu/<category>/<dish>/`.
 6. **Data before pages, for a store**: §4 — sources → tabs → products, in that order, or
    `add_product_` refuses.
-7. **Build each page with ONE `replace_page_<site>`** (content = `[{type, props:{id?, …, body:[…]}}]`;
+7. **Build each page with ONE `replace_page_<site>`** (`{page, data: {content: [{type, props:{…, body:[…]}}]}}` — `data` is the page object;
    slots are `body` on Section, `col1..col4` on Columns, `row` on List). Home first, then the
-   rest. Give blocks stable ids (`hero`, `about`) so later edits can address them. Default
+   rest. Ids are minted for you; the answer lists every block with its id — later edits address blocks by it. Default
    section rhythm: §3.
 8. **Look, then critique**: `screenshot_page_<site>` `{page, viewport:"phone"}` and `view_image`
    it; then `critique_page_<site>` with `{page, viewport: "phone", intent}` then `"desktop"` for
@@ -298,7 +298,7 @@ set_theme_<site>        {accent?, background?, foreground?: hex, font?: editoria
                          radius?: none|sm|md|lg|pill, density?: compact|comfortable|airy, frame?: hex | ""}
 ```
 
-### 7.1 A business home page in one `replace_page_<site>` (`arguments: {page: "home", content: [...]}`)
+### 7.1 A business home page in one `replace_page_<site>` (`arguments: {page: "home", data: {content: [...]}}`)
 
 ```json
 [
