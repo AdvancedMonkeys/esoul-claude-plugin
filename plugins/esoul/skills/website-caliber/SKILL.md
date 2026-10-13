@@ -59,8 +59,10 @@ The poster headline (`Display size: poster`) is allowed for ONE site of a set.
   zbývá 2 h"); `from: "timetable"` says the next session ("Příští trénink: Dnes 19:00 · Začátečníci").
 - `Section {anchor: "cenik", anchorLabel: "Ceník"}` for every chapter the bar or a button names.
 - **Scroll budget**: ≤ 7 phone screens (≤ 8 desktop). Group, don't cut: a long price list goes in
-  `PriceTable {tabs: true}`, forty categories in `Board {compact: true, search: true}`, a week in a
-  `Timetable`. One pinned chapter at most; none on a phone.
+  `PriceTable {tabs: true}`, forty categories in `Board {compact: true, search: true, more: 8}`, a
+  week in a `Timetable`. One pinned chapter at most; none on a phone.
+- A price that buys several things says what: "200 Kč · 8 vstupů za 1 280 Kč", never "200 Kč · 8
+  vstupů 1 280 Kč" (on a phone it wrapped into "· 10 / vstupů 3 500 Kč").
 
 ## 4. The client's object: photoreal, never a blob
 
@@ -76,10 +78,13 @@ a STILL that looks like a photograph:
    the colour of the section it will sit on (glass shows that colour through it). `dry_run: true` first
    shows the price.
 3. `Image {image, size: sm|md|lg}` beside the words it belongs to (the valve beside "zavřete hlavní
-   uzávěr"), or `place: "behind"` under a headline; `swap: {url}` cross-fades a second state (a bulb
-   that lights — make it by editing the first picture so the two align); `drift: true` for life.
+   uzávěr"), or `place: "behind"` under a SHORT headline — never under a paragraph or a quote (red
+   words over red book covers could not be read; put the object beside them in `Columns`); `swap:
+   {url}` cross-fades a second state (a bulb that lights — make it by editing the first picture so
+   the two align); `drift: true` for life.
 Generated pictures show objects, materials, atmosphere — never the business's premises, staff,
-customers or work; caption "Ilustrační foto" where a visitor could take it for theirs.
+customers or work; caption "Ilustrační foto" where a visitor could take it for theirs (`Image
+{caption}`, `Card {imageNote}`).
 
 ## 5. The vocabulary
 
