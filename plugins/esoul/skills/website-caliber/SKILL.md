@@ -67,7 +67,7 @@ the same as `Video {place: "behind"}`.
   mutedWords, accentStyle, lines: stagger, reveal: scramble, scrub}` — one giant line.
 - `Statement {text with *starred* words, size: xl}` — words light as it scrolls; stars only
   around words ("*Hrabůvka*:" is fine).
-- `Section {pin: 3|4, pinLayout: steps|rail|flow, pageColor, pageInk, backdrop, tone, width:
+- `Section {pin: 3|4 (how many screens of scroll the chapter holds), pinLayout: steps|rail|flow, pageColor, pageInk, backdrop, tone, width:
   wide, padding: lg}` — steps: 3–4 Displays (size display, ≤ 3 short lines), one beat each; rail:
   a Display then 5–8 Cards (they become posters; on a phone a swipe row); flow: the object behind
   + text. Any backdrop works on a pinned Section. Cards in a dark band take its colours.
@@ -103,7 +103,9 @@ eye: **empty-screen**, **art-front-loaded**, **template-row**, **static-pin**, *
 ## 6. The loop (≤ 4 rounds)
 
 1. `critique_page_ {viewport: "desktop", mode: "caliber"}` — nine rules 0–2 over frames at 0/35/70 %
-   WITH motion, plus measured facts. Fix the lowest rule first; the note names the prop.
+   WITH motion. It prints "Measured on the page: …" (pins, stacks, magnets…): if those counts
+   contradict your page, the judge did not see it — re-run, never edit to chase it. Fix the lowest
+   rule first; the note names the prop. Judges also misread (a wrong time, a "cropped" peek): check.
 2. `screenshot_page_ {at: 0.35}` and `{at: 0.7}` — look: one beat per frame, text readable over
    the art, the object visible.
 3. `screenshot_page_ {viewport: "small"}` (320 px) and `{viewport: "tablet"}` — every measured rule
