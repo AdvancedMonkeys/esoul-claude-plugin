@@ -1,9 +1,9 @@
 ---
 name: website-caliber
-description: Make a Site-app website of the gsap.com / lenis.dev / reactbits.dev caliber — giant display type, one idea per screen, one neon accent, art that lives with the type (shader backdrops, the client's own 3D object from the CAD app, a Figure Studio film), scroll as the story (pinned chapters, a sideways rail, a stack, a statement whose words light up, a page that changes colour), magnet buttons and glare, a pill nav and smooth scroll — judged by critique_page_ mode caliber. Stage 2b of the website skills (start at `website`); read before laying out any page. Not for a Forge app's look.
+description: Build or rebuild a local business's Site-app website that ANSWERS FIRST and has its OWN shape — within the first screen who, what and a call or booking button; prices and today's hours one tap away (AnswerBar, the live Today line, anchors, a scroll budget of ≤ 7 phone screens); one opening, one spine, one close and one motion family per site so two sites never share a skeleton; the client's object as a PHOTOREAL still (CAD → render → generate_image with the render as reference), never a live Model3D blob; judged by the phone ship critique first. Stage 2b of the website skills (start at `website`). Not for a Forge app's look.
 ---
 
-# Caliber — sites of the gsap.com / lenis.dev class
+# Caliber — sites that answer first, each in its own shape
 
 The platform skill `site-caliber` is the same text: in a workspace chat read it with
 `read_skill("platform:site-caliber")`. This file is that text for a Claude that builds over MCP
@@ -11,107 +11,102 @@ The platform skill `site-caliber` is the same text: in a workspace chat read it 
 
 Previous stage: `website-look`. Next: `build-esoul-website` (the block manual) → `website-publish`.
 
-Read this BEFORE laying out any page. The bar: giant type, one idea per SCREEN (a long page of many
-screens), one neon accent, art that lives with the type, scroll as the story — and EVERYTHING known
-about the business on the page (the full price list, the history with years and names, the hours,
-the people, the guests' words). A thin page of three poster words is a template, not a site. Every
-move below is a PROP with a tuned default; your job is the brand's words and the choices.
-`<site>` = the site app's tool suffix. Story first (`platform:site-story`): read the brief notes. Nobody to ask (an autonomous run)? The
-brief IS the interview: decide, use only its facts, and say what you assumed; the CAD object, a
-backdrop and the type are the art when there are no photos.
+Two failures this replaces (owner, 2026-10-13): fifteen sites in ONE skeleton (poster hero → marquee →
+pins → rail → stack → wall), and pages a visitor had to scroll 7–12 screens through to find the phone,
+the prices and today's hours. The bar now: **the girlfriend test** — within the first screen: who,
+what, a call or booking button; within one tap: prices and today's hours; within a flick: where.
+Craft (giant type, one accent, the client's object, motion) serves that; it never delays it. Every
+fact from the brief is on the page, GROUPED (tabs, chips, a timetable), never one fact per screen.
 
-## 1. Brand → features (decide once)
+## 1. Who visits, in what state
 
-Place the brand on four axes — temperature, weight, age, tempo — and take the row. Every site gets
-its OWN face and palette (no two of the owner's sites share one).
+Write one line before anything: the visitor, their device, what they need NOW. "Water on the floor
+at 2 a.m., on a phone, afraid of the price." "Wants a massage: which, how long, what it costs."
+Two kinds of visitor (a pub and the party planner; a passport photo now and a family session)?
+The first screen holds both doors and nothing else; the second door's chapter comes second.
 
-| Brand reads as | face | bg / fg / accent | backdrop | object behind the type | scroll |
-|---|---|---|---|---|---|
-| warm · heavy · heritage · fast (pub, restaurant) | `anton` caps | `#120d0b` / `#fff3e2` / `#ffb03b` | `nebula` | tankard, dish | rail of dishes, cream menu chapter |
-| warm · light · heritage · still (bakery, books, florist) | `instrument`, `serif`, `bricolage` | cream or bottle green + a warm accent | `silk`, `grain` | loaf, books, tulips | stack, lit statement |
-| cool · light · new · still (clinic, adviser, architect) | `gloock`, `grotesk`, `mono` | white/paper + blue, mint or orange | `silk`/`threads` hero, `grid`/`dots` chapters, `grain` dark | calculator, molar, house | pinned steps, rail |
-| cool · heavy · new · fast (trades, coach, gym) | `bigshoulders`, `bebas`, `unbounded`, `archivo` | near-black + yellow, lime, cyan, red | `threads`, `stars` | bulb, dumbbell, valve, heavy bag | steps, sticker words |
-| warm · light · new · fast (studio, kids, salon) | `syne`, `familjen`, `editorial` | peach/cream + pink, violet | `dots`, `silk` | camera, chestnut, scissors | rail, stack |
+## 2. The shape: one opening, one spine, one close, one motion
 
-ONE call: `set_theme_ {accent, background, foreground, font, radius: "pill", density: "airy",
-motion: "lively", nav: "pill", scroll: "smooth"}`. Pill rounds buttons only. Any accent works on any
-background: accent TEXT is darkened/lightened automatically until it reads; the fill stays the brand.
-Seasonal change (Halloween, a sale): patch only accent/background/backdrop and the hero words.
+Choose each from its list. Two sites of one owner never share an opening + spine + close.
 
-## 2. The object — made in the CAD app, put behind the type
+| Opening (the first screen answers the visitor's first question) | when |
+|---|---|
+| **board** — the board IS the hero (`PriceTable` on its slate, a tap wall `Board`) + `Today` | pub, wine shop, café |
+| **dial** — the phone number as the headline, one call button, one price line | emergency trades |
+| **ticket** — one offer as a card (`Card variant: brutal`) + its button | first training free, a countdown |
+| **two doors** — two cards, two buttons, nothing else | two kinds of visitor |
+| **notice** — the honest line first (`Notice`), then the answers | closed shop, no new patients |
+| **letter** — the owner's own words, signed (`Quote`) + two ways to reach them | adviser, accountant |
+| **process** — the three steps as the hero (`Timeline`) | architect, studio |
+| **calm line + Today** — a short heading, the live opening line, two buttons | salon, massage |
+The poster headline (`Display size: poster`) is allowed for ONE site of a set.
 
-The persisting object (the lenis.dev hand) is the client's own thing, modelled in the workspace's
-CAD app (`create_app plugin_cad` if none; `read_skill`/`cad_help_<Model>` for op shapes):
-- a round thing (glass, bottle, bulb, vase, stones) = a half-profile `sketch` on plane `ZX` (u ≥ 0 =
-  radius, v = height, lines closed along the axis) + `revolve` about `{x:0,y:0,z:1}`;
-- a flat thing (calculator, books, house) = `XY` sketch + `extrude`; a `grid` entity for keys/windows;
-- keep separate bodies (no fuse of touching curved parts); `cad_build {view: true}` and LOOK;
-- give the thing its character: a loaf has scoring cuts, a glass a stem — a bare primitive reads
-  as a placeholder; one `style {node, color}` per body;
-- `cad_request {kind: "export", args: {format: ".stl binary", name: "Tankard"}}` → `cad_build` →
-  `cad_read_answer {requestId}` (the printed id WITHOUT its `request:` prefix) → `Tankard.stl` is in
-  the workspace. Export only your bodies with `args.ids: ["<stepId>:<opId>"]` (no `node:`).
-Then `Model3D {file: {url: "Tankard.stl"}, material: chrome|matte|accent|glass, motion: tumble|turn|
-follow, color, height: "screen", tone: "clear", place: "behind"}` as a DIRECT child of a pinned
-`flow` Section, with the kicker, a Display and one paragraph. `color` paints every material (an STL
-carries none). Behind = it fills the band on a desktop with the text over its left side; on a phone
-it comes after the text. Bring it back behind the closing wall with another motion. A film (Figure/Render Studio) works
-the same as `Video {place: "behind"}`.
+**Spines** (how the facts are grouped): `PriceTable {tabs}` · `Board {chips, search}` ·
+`Timetable` (chips by group) · `Tabs` / `Accordion` · `Timeline` · `Estimate` · `Booking`.
+**Closes**: the practical band (Hours + where + buttons) · a form · their own words (`Statement` or
+`Quote`) · a giant `Today {size: xl}` (at most one site in three).
+**Motion** (one family): calm fades · urgency (one pulsing button) · drawing (`Svg draw`) · count-up
+`Stats` · paper, nothing moves · fill tiles · silk in the opening only · sticker + hard reveals.
 
-## 3. The vocabulary
+## 3. Answers first
 
-- `Hero {scale: poster, height: screen, eyebrowStyle: brackets|mono|line, cue: true, backdrop,
-  accentWords: "2", accentStyle: color|gradient|sticker|underline, lines: stagger}` — ≤ 12 words,
-  ONE button (secondary empty), a subtitle ≤ 120 characters.
-- `Display {text "A\nB", size: display|poster|wall, uppercase, accentWords, outlineWords,
-  mutedWords, accentStyle, lines: stagger, reveal: scramble, scrub}` — one giant line.
-- `Statement {text with *starred* words, size: xl}` — words light as it scrolls; stars only
-  around words ("*Hrabůvka*:" is fine).
-- `Section {pin: 3|4 (how many screens of scroll the chapter holds), pinLayout: steps|rail|flow, pageColor, pageInk, backdrop, tone, width:
-  wide, padding: lg}` — steps: 3–4 Displays (size display, ≤ 3 short lines), one beat each; rail:
-  a Display then 5–8 Cards (they become posters; on a phone a swipe row); flow: the object behind
-  + text. Any backdrop works on a pinned Section. Cards in a dark band take its colours.
-- `Stack {items: [Section tone dark|accent|tint, padding lg, a kicker, a Display, a paragraph, a
-  Button]}` — 3–4 cards that pile.
-- `Card {title, body, variant: outline|brutal, tag}` · `Button {label, href, variant, icon:
-  phone|map|mail|calendar|cart|arrow|play}` · `Marquee {items, tone: accent}` · `Stats` ·
-  `Hours` · `Columns` (2) for the practical band.
-- Kicker above a chapter: RichText `<p class="site-kicker">01 — Z tanku</p>`.
-- Backdrops: `silk nebula threads stars` (living), `grain grid dots glow aurora` (quiet).
-- Designed blocks only for what this lacks (`design_block_` lists its motion attributes).
+- `AnswerBar {items: [{label, href, icon}] ×4, today, openLabel, closedLabel}` right after the
+  ribbon: a phone's bottom bar, a desktop pill. One word per item (Zavolat · Ceník · Dnes · Kde);
+  `href` = `tel:`, `#anchor`, a map URL. `today: true` reads the page's `Hours`; a 24/7 service
+  sets `closedLabel: "Teď: havarijní služba 24/7"` (never "Zavřeno"); no hours known → `today: false`.
+- `Today {size: lg|xl, openLabel, closedLabel, prefix}` — the live line from `Hours`;
+  `deadline: {time: "17:00", before, after}` counts down ("Objednáte do 17:00, doručíme zítra ·
+  zbývá 2 h"); `from: "timetable"` says the next session ("Příští trénink: Dnes 19:00 · Začátečníci").
+- `Section {anchor: "cenik", anchorLabel: "Ceník"}` for every chapter the bar or a button names.
+- **Scroll budget**: ≤ 7 phone screens (≤ 8 desktop). Group, don't cut: a long price list goes in
+  `PriceTable {tabs: true}`, forty categories in `Board {compact: true, search: true}`, a week in a
+  `Timetable`. One pinned chapter at most; none on a phone.
 
-## 4. The page (12–16 chapters, all from the brief)
+## 4. The client's object: photoreal, never a blob
 
-1 ribbon/nav · 2 poster Hero (backdrop, cue) · 3 Marquee of real offers · 4 pinned flow: the
-object behind the first story chapter · 5 Statement in their own words · 6 pinned steps (how it
-works / their years / their hours as beats) · 7 pinned rail: the price list as poster cards with
-prices · 8 a `pageColor` chapter (the menu/price grid or a designed board) · 9 kicker + Display +
-Stack of 3–4 services · 10 Stats of real numbers · 11 Columns: Hours / where / contact with icon
-buttons · 12 wall Display close on the brand colour, the object back behind it (another motion) + two
-buttons · 13 Footer with the legal name.
-Vary it per brand — but never drop the facts, and never repeat one: a thin brief (a few prices,
-one address) makes 8–10 chapters, not 16 — fewer, bigger screens beat padding. Phone: pins and stacks work; flow pins unpin.
+A live `Model3D` of a CAD export reads as a low-poly, one-colour blob — the owner rejected it. Make
+a STILL that looks like a photograph:
+1. Model the object in the CAD app (`read_skill platform:cad`; a round thing = a revolved
+   profile; give it character — a glass has a handle, a loaf has cuts) and render it
+   (`platform:render-studio`, or the CAD app's own view) — a composed picture of the object.
+2. `generate_image {workspace_id, prompt: "Photorealistic studio product photograph of exactly the
+   object in the reference: <what it is, its materials>. Same object, proportions, angle and framing.
+   Plain seamless background <the section's hex>, soft contact shadow. No text, no logo, no people.",
+   references: ["<the render's file id or name>"], aspect_ratio: "1:1", folder: "Site/Renders"}` — on
+   the colour of the section it will sit on (glass shows that colour through it). `dry_run: true` first
+   shows the price.
+3. `Image {image, size: sm|md|lg}` beside the words it belongs to (the valve beside "zavřete hlavní
+   uzávěr"), or `place: "behind"` under a headline; `swap: {url}` cross-fades a second state (a bulb
+   that lights — make it by editing the first picture so the two align); `drift: true` for life.
+Generated pictures show objects, materials, atmosphere — never the business's premises, staff,
+customers or work; caption "Ilustrační foto" where a visitor could take it for theirs.
 
-## 5. The grader's rules (every one came from a real mistake)
+## 5. The vocabulary
 
-`screenshot_page_` and `critique_page_` MEASURE these and name them by id with the fix; a severe one
-fails the page: **horizontal-overflow / clipped-headline** (nothing wider than a 320 px phone),
-**leaked-markup** (`*`, `\n`, `{{…}}`, `[placeholders]`), **empty-media** (every file name exists),
-**low-contrast**, **stadium-panel**, **tight-diacritics**, **tiny-text**, **crowded-hero**. Judged by
-eye: **empty-screen**, **art-front-loaded**, **template-row**, **static-pin**, **palette-drift**.
+`Board {items: [{title, sub, price, tag, group, href, url}], columns, chips: "filter", search,
+compact}` · `PriceTable {groups: [{title, note, url, rows: [{name, price, note, minutes}]}], layout:
+table|grid|bars, tabs}` · `Timetable {rows: [{day 1–7, from, to, title, who, group}], chips, next}` ·
+`Tabs {labels, tab1…tab4}` · `Accordion {items, item1…item6, open}` · `Estimate {inputs, formula,
+formulaMax, note, cta}` (a range stays a range) · `Timeline {items: [{year, title, line}]}` ·
+`Notice {text, tone, action}` · `Booking {source, deliver, next: 3}` (the nearest free times as chips —
+honest availability where there are no hours) · `Hours` · `Card` · `Stats` · `Quote` · `Statement` ·
+`Display` · `Columns` · `Button {icon}`. Kicker: RichText `<p class="site-kicker">Ceník</p>`.
 
-## 6. The loop (≤ 4 rounds)
+## 6. The grader's rules (every one came from a real mistake)
 
-1. `critique_page_ {viewport: "desktop", mode: "caliber"}` — nine rules 0–2 over frames at 0/35/70 %
-   WITH motion. It prints "Measured on the page: …" (pins, stacks, magnets…): if those counts
-   contradict your page, the judge did not see it — re-run, never edit to chase it. Fix the lowest
-   rule first; the note names the prop. Judges also misread (a wrong time, a "cropped" peek): check.
-2. `screenshot_page_ {at: 0.35}` and `{at: 0.7}` — look: one beat per frame, text readable over
-   the art, the object visible.
-3. `screenshot_page_ {viewport: "small"}` (320 px) and `{viewport: "tablet"}` — every measured rule
-   clean at every width.
-4. `critique_page_ {viewport: "phone", mode: "ship"}` before publishing (`platform:site-publish`).
-Stop at a pass (every rule ≥ 1, score ≥ .75) or say what still fails and why. A verdict moves
-about ±.05 between runs, so read the rule NOTES, not one number: fix what two runs both name, and
-never trade one viewport for the other — a change that fails the phone is undone
-(`undo_last_edit_`), whatever it did for the desktop. A critique that answers "aborted" is retried once.
+Measured by `screenshot_page_` / `critique_page_`, named by id with the fix: **buried-answers**
+(severe: no answer bar and the phone or hours below 1.2 screens), **too-long**, **no-jumps**,
+**pin-heavy**, **horizontal-overflow / clipped-headline**, **leaked-markup**, **empty-media**,
+**low-contrast**, **tiny-text**, **crowded-hero**. Judged by eye: **template-row** (identical tiles —
+vary or group them), **art-front-loaded** (the object only in the opening — place it where it
+explains), **empty-screen**, **palette-drift**.
+
+## 7. The loop (≤ 4 rounds)
+
+1. `critique_page_ {viewport: "phone", mode: "ship"}` — the girlfriend test, and it names what is
+   missing. This is the acceptance test.
+2. `screenshot_page_` at `small` (320), `phone`, `tablet`, `desktop` — every measured rule clean at
+   every width; read "Navigation: N screens, answers at …".
+3. `critique_page_ {viewport: "desktop", mode: "caliber"}` — craft, after the answers work.
+Stop at a phone PASS with clean lint, or say what still fails and why. Verdicts move ±.05 between
+runs: fix what two runs both name; a change that fails the phone is undone (`undo_last_edit_`).
