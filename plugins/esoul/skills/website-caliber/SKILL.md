@@ -50,8 +50,8 @@ The poster headline (`Display size: poster`) is allowed for ONE site of a set.
 
 ## 3. Answers first
 
-- `AnswerBar {items: [{label, href, icon}] ×4, today, openLabel, closedLabel}` right after the
-  ribbon: a phone's bottom bar, a desktop pill. One word per item (Zavolat · Ceník · Dnes · Kde);
+- `AnswerBar {items: [{label, href, icon}] ×4, today, openLabel, closedLabel}` first on the page
+  (after the `DemoRibbon` on a demo): a phone's bottom bar, a desktop pill. One word per item (Zavolat · Ceník · Dnes · Kde);
   `href` = `tel:`, `#anchor`, a map URL. `today: true` reads the page's `Hours`; a 24/7 service
   sets `closedLabel: "Teď: havarijní služba 24/7"` (never "Zavřeno"); no hours known → `today: false`.
 - `Today {size: lg|xl, openLabel, closedLabel, prefix}` — the live line from `Hours`;
@@ -63,6 +63,10 @@ The poster headline (`Display size: poster`) is allowed for ONE site of a set.
   week in a `Timetable`. One pinned chapter at most; none on a phone.
 - A price that buys several things says what: "200 Kč · 8 vstupů za 1 280 Kč", never "200 Kč · 8
   vstupů 1 280 Kč" (on a phone it wrapped into "· 10 / vstupů 3 500 Kč").
+- A SHORT brief (≤ 6 facts): the board opening + the practical close, the second door a row of the
+  board (wedding koláčky "na objednávku · 3 dny předem") — never chapters padded to fill screens.
+- `Hours` rows: the `day` label is read ("Po–Pá", "So a Ne", "denně"), else `weekday` 1–7 or
+  "1-5" — one row per day or per range, or the live line says the wrong thing.
 
 ## 4. The client's object: photoreal, never a blob
 
@@ -75,8 +79,9 @@ a STILL that looks like a photograph:
    object in the reference: <what it is, its materials>. Same object, proportions, angle and framing.
    Plain seamless background <the section's hex>, soft contact shadow. No text, no logo, no people.",
    references: ["<the render's file id or name>"], aspect_ratio: "1:1", folder: "Site/Renders"}` — on
-   the colour of the section it will sit on (glass shows that colour through it). `dry_run: true` first
-   shows the price.
+   the colour of the band it will sit on (`read_site_` prints each band's hex; glass shows it through).
+   The background comes back NEAR that colour, not exact: on a plain band it melts in; elsewhere set
+   it as a rounded picture (`Image` without `size`), not a mark. `dry_run: true` first shows the price.
 3. `Image {image, size: sm|md|lg}` beside the words it belongs to (the valve beside "zavřete hlavní
    uzávěr"), or `place: "behind"` under a SHORT headline — never under a paragraph or a quote (red
    words over red book covers could not be read; put the object beside them in `Columns`); `swap:
@@ -111,7 +116,8 @@ explains), **empty-screen**, **palette-drift**.
 1. `critique_page_ {viewport: "phone", mode: "ship"}` — the girlfriend test, and it names what is
    missing. This is the acceptance test.
 2. `screenshot_page_` at `small` (320), `phone`, `tablet`, `desktop` — every measured rule clean at
-   every width; read "Navigation: N screens, answers at …".
+   every width; read "Navigation: N screens, answers at …". `{at: 0}` is the real first screen,
+   with the live answer bar (a full-page capture rests the bar at the end).
 3. `critique_page_ {viewport: "desktop", mode: "caliber"}` — craft, after the answers work.
 Stop at a phone PASS with clean lint, or say what still fails and why. Verdicts move ±.05 between
 runs: fix what two runs both name; a change that fails the phone is undone (`undo_last_edit_`).

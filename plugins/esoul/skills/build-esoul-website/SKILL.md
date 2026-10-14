@@ -148,7 +148,9 @@ Store: `Header{logo,title,subtitle,links,showCart,cartHref,showAccount,accountHr
 currency,overlay:bool,menuLabel}` (overlay floats it over a screen-height Carousel; on phones the
 links fold into a drawer. `overlay` changes only the bar's own styling, never the drawer's
 markup: both modes render the same panel, so a drawer bug is never an `overlay` misconfiguration) · `InfoBar{address,mapHref,phone,cta}` · `Hours{title,lines:[{day,hours,
-weekday}]}` (**weekday 1 = Monday … 7 = Sunday**; the visitor's day is highlighted) ·
+weekday}]}` (the live today line and today's highlight read the `day` label a visitor reads —
+`Po–Pá`, `So a Ne`, `Pondělí`, `denně` — else `weekday` 1 = Monday … 7, or `"1-5"`; a row neither
+names is flagged `hours-unreadable`) ·
 `ModeTiles{modes:[{id:here|pickup|delivery,label,hours,icon}],layout:tiles|bar,links}` ·
 `Catalog{categories:[{source,title,emoji,tag,limit}],layout:auto|grid|list,chips,placeholder:{url},
 variant:cards|showcase,cardDetails:auto|compact|full,addLabel,currency}` · `CartBar{checkoutHref,
@@ -183,16 +185,9 @@ type scale): eyebrow ≤ 24 characters; level-1 title ≤ 30 characters (two lin
 heading ≤ 44 characters; hero subtitle ≤ 120 characters; a Card title ≤ 28; a button label ≤ 18.
 Longer → the critique reports "heading wraps to three lines"; cut words, do not shrink type.
 
-**Default section rhythm** (the composition that produced the pages we were proud of — start
-here, deviate for a reason):
-
-1. `Section{tone:plain, padding:sm}` — a utility bar (Header, or logo + one phone link)
-2. `Hero{height:tall}` — one statement, one eyebrow, one primary action (+ one secondary)
-3. `Section{tone:tint, padding:md}` — `Stats` or three short proof points
-4. `Section{tone:plain, padding:lg}` — the offer: `Columns{3}` of `Card`
-5. `Section{tone:dark, padding:lg, width:narrow}` — the story: `Heading` + `RichText` (+ `Quote`)
-6. `Section{tone:plain, padding:sm}` — utility: `Hours` / `InfoBar` / a form
-7. `Section{tone:tint, padding:md}` — footer: `Columns{3}` (address · hours · map) + `Footer`
+**The page's shape** is the `website-caliber` skill's §2–§3: an `AnswerBar`, ONE opening that
+answers the visitor's first question, a spine that groups the facts, a close — never the old hero
+→ stats → three cards → story → footer template (fifteen sites built on it looked like one site).
 
 Never two `lg` plain-text sections in a row — alternate tone (`tint`, a photo `background`,
 `dark`). `padding:lg` for story sections, `md` for lists, `sm` for utility bars.
