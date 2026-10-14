@@ -100,7 +100,9 @@ table|grid|bars, tabs}` · `Timetable {rows: [{day 1–7, from, to, title, who, 
 formulaMax, note, cta}` (a range stays a range) · `Timeline {items: [{year, title, line}]}` ·
 `Notice {text, tone, action}` · `Booking {source, deliver, next: 3}` (the nearest free times as chips —
 honest availability where there are no hours) · `Hours` · `Card` · `Stats` · `Quote` · `Statement` ·
-`Display` · `Columns` · `Button {icon}`. Kicker: RichText `<p class="site-kicker">Ceník</p>`.
+`Display` · `Columns` · `Button {icon}`. Kicker: RichText `<p class="site-kicker">Ceník</p>` (drawn mono,
+tracked, in the accent's ink, a hairline before it). `set_theme_ {headings: "display"}`: every chapter heading at
+display size (~120 px on a desktop, sized by its column; its words cascade in on a lively site) — the judge's scale.
 
 ## 6. The grader's rules (every one came from a real mistake)
 
