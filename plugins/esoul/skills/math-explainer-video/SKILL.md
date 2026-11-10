@@ -633,7 +633,7 @@ Only for atmosphere, never for defined motion.
   (images ride separately and are never part of it). Print less; do not retry hoping for more.
 - **You verified an export and it looked unchanged — you were looking at the PREVIOUS one.** This
   is the mirror of the re-download trap, and worse, because it silently confirms a stale cut.
-  Auto-sync only fetches workspace files NOT YET copied to this sandbox, so a same-named
+  The sandbox copies in only workspace files NOT YET copied to it, so a same-named
   replacement (`<name>-export.mp4`) never re-downloads. After re-exporting, read `lastExport.fileId`
   from the timeline and `copy_file_to_sandbox` it to a VERSIONED path (`export_v3.mp4`) before
   checking anything.
