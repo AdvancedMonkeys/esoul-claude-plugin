@@ -49,7 +49,7 @@ films — look at those yourself; they need a 0.4–0.6 dark overlay.
 
 Set them with `publish_homepage(… , seo_title, seo_description, seo_image_url)` (the image can
 be an https URL or an app asset path). For a Site app also set the business record
-(`set_business_<site>`: name, street/city, `openingHours` as a list, `telephone`) — it becomes structured data on every page.
+(`set_business_<site>`: name, address, hours, phone) — it becomes structured data on every page.
 
 ## 4. Publish — the owner's call
 
@@ -60,9 +60,13 @@ Ask the owner before this step; it is public at once.
 - Forge app: it is live on the owner's approval of the pull request and the deploy; then
   `publish_homepage` with the app as `front_app_id`.
 
-The homepage is `externalsoul.com/u/<handle>`. A custom domain is linked in the Explorer:
-the workspace's ⋯ → *Make homepage* panel → domain; the DNS record it shows goes to the
-domain's registrar. Sign-in on a custom domain bounces through externalsoul.com and back.
+An account can have several homepages, one per business; the MAIN one is
+`externalsoul.com/u/<handle>`. `publish_homepage` adds one beside the main one (`main: true`
+makes it the main one; the first is main) and never takes another down — read `url` from its
+answer. Pass `domain` to give it a domain the person owns: the answer lists every DNS record to
+set at the registrar, including the `_esoul.<domain>` TXT that proves the domain is theirs —
+nothing is shown on it until that record is found. In the app: Explorer → *Homepages*. Sign-in
+on a custom domain bounces through externalsoul.com and back.
 
 ## 5. Verify like a visitor
 
